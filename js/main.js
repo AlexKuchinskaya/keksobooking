@@ -1,31 +1,16 @@
 'use strict';
-function getRandomIntInclusive(min, max) {
-  let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min; // Максимум и минимум включаются
-  return randomNumber;
-}
 
-// Работает location x брала размеры блока div.map__overlay
 const MIN_X = 0;
 const MAX_X = 704;
 const MIN_Y = 130;
 const MAX_Y = 630;
-let locationX = getRandomIntInclusive(MIN_X, MAX_X);
-let locationY = getRandomIntInclusive(MIN_Y, MAX_Y);
+const MIN_PRICE = 10000;
+const MAX_PRICE = 50000;
+const MIN_ROOMS = 1;
+const MAX_ROOMS = 15;
+const MIN_GUESTS = 1;
+const MAX_GUESTS = 20;
 
-let randomPrice = getRandomIntInclusive(10000, 50000);
-let randomRooms = getRandomIntInclusive(1, 15);
-let randomGuests = getRandomIntInclusive(1, 20);
-
-let getAvatar = function () {
-  let avatarArr = [];
-  for (let i = 1; i <= 8; i++) {
-    let newAvatar = `img/avatars/user` + `0` + i + `.png`;
-    avatarArr.push(newAvatar);
-  }
-  return avatarArr;
-};
-
-const advertAvatar = getAvatar();
 const ADVERT_TITLE = [
   `hotel Hilton`,
   `appartment FriendlyRental 2`,
@@ -50,77 +35,16 @@ const ADVERT_DESCRIPTION = [
   `Этот 5-звездочный дизайн-отель с видом на порт Барселоны расположен в здании Международного торгово-выставочного центра, в 5 минутах ходьбы от бульвара Рамбла.`
 ];
 
-// features
 const FEATURES = [`wifi`, `dishwasher`, `parking`, `washer`, `elevator`, `conditioner`];
-let getRandomLength = function (arr) {
-  let randomLength = Math.floor(Math.random() * arr.length);
-  return randomLength;
-};
 
-
-const getRandomParameter = function (arr) {
-  let randomParameter = arr[Math.floor(Math.random() * arr.length)];
-  return randomParameter;
-};
-
-
-const getObjectArray = function (arr) {
-  let someArr = [];
-  for (let i = 0; i < getRandomLength(arr); i++) {
-    someArr.push(getRandomParameter(arr));
-  }
-  return someArr;
-};
-
-let randomFeatureArray = getObjectArray(FEATURES);
-
-// Photos
 const PHOTOS = [
   `http://o0.github.io/assets/images/tokyo/hotel1.jpg`,
   `http://o0.github.io/assets/images/tokyo/hotel2.jpg`,
   `http://o0.github.io/assets/images/tokyo/hotel3.jpg`
 ];
 
-let randomPhotosArray = getObjectArray(PHOTOS);
-
-let randomTitle = getRandomParameter(ADVERT_TITLE);
-let randomCheckin = getRandomParameter(CHECKIN);
-let randomCheckout = getRandomParameter(CHECKOUT);
-let randomType = getRandomParameter(ADVERT_TYPE);
-let randomDescription = getRandomParameter(ADVERT_DESCRIPTION);
-
-
-let getArray = function () {
-  const announcementArray = [];
-  for (let i = 0; i < 8; i++) {
-    let author = {};
-    author.avatar = advertAvatar;
-    announcementArray.push(author);
-
-    let offer = {};
-    offer.title = randomTitle;
-    offer.adress = locationX + `, ` + locationY;
-    offer.price = randomPrice;
-    offer.type = randomType;
-    offer.rooms = randomRooms;
-    offer.guests = randomGuests;
-    offer.checkin = randomCheckin;
-    offer.checkout = randomCheckout;
-    offer.features = randomFeatureArray;
-    offer.description = randomDescription;
-    offer.photos = randomPhotosArray;
-    announcementArray.push(offer);
-
-    let location = {};
-    location.y = locationY;
-    location.x = locationX;
-    announcementArray.push(location);
-
-  }
-  return announcementArray;
-};
-
-let announcementArray = getArray();
+const PIN_OFFSET_Y = 84;
+const PIN_OFFSET_X = 31;
 
 const mapDialog = document.querySelector(`.map`);
 mapDialog.classList.remove(`map--faded`);
@@ -129,20 +53,93 @@ const announcementPins = document.querySelector(`.map__pins`);
 const advertTask = document.querySelector(`#pin`).content;
 const advertTemplate = advertTask.querySelector(`.map__pin`);
 
-const PIN_OFFSET_Y = 84;
-const PIN_OFFSET_X = 31;
+const fragment = document.createDocumentFragment();
+
+function getRandomIntInclusive(min, max) {
+  let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+  return randomNumber;
+}
+
+let getAvatar = function () {
+  let avatarArr = [];
+  for (let i = 1; i <= 8; i++) {
+    let newAvatar = `img/avatars/user` + `0` + i + `.png`;
+    avatarArr.push(newAvatar);
+  }
+  return avatarArr;
+};
+const avatarArray = getAvatar();
+
+let getRandomLength = function (arr) {
+  return Math.floor(Math.random() * arr.length);
+};
+
+const getRandomParameter = function (arr) {
+  let randomParameter = arr[Math.floor(Math.random() * arr.length)];
+  return randomParameter;
+};
+
+const getObjectArray = function (arr) {
+  let someArray = [];
+  for (let i = 0; i < getRandomLength(arr.length); i++) {
+    someArray.push(getRandomParameter(arr));
+  }
+  return someArray;
+};
+
+let getArray = function () {
+  const announcementArray = [];
+  for (let i = 0; i < 8; i++) {
+
+    const randomAvatar = getRandomParameter(avatarArray);
+    const randomTitle = getRandomParameter(ADVERT_TITLE);
+    const randomCheckin = getRandomParameter(CHECKIN);
+    const randomCheckout = getRandomParameter(CHECKOUT);
+    const randomType = getRandomParameter(ADVERT_TYPE);
+    const randomDescription = getRandomParameter(ADVERT_DESCRIPTION);
+    const locationX = getRandomIntInclusive(MIN_X, MAX_X);
+    const locationY = getRandomIntInclusive(MIN_Y, MAX_Y);
+    const randomPrice = getRandomIntInclusive(MIN_PRICE, MAX_PRICE);
+    const randomRooms = getRandomIntInclusive(MIN_ROOMS, MAX_ROOMS);
+    const randomGuests = getRandomIntInclusive(MIN_GUESTS, MAX_GUESTS);
+    const randomFeatureArray = getObjectArray(FEATURES);
+    const randomPhotosArray = getObjectArray(PHOTOS);
+
+    announcementArray.push({
+      avatar: randomAvatar,
+      title: randomTitle,
+      adress: `${locationX}, ${locationY}`,
+      price: randomPrice,
+      type: randomType,
+      rooms: randomRooms,
+      guests: randomGuests,
+      checkin: randomCheckin,
+      checkout: randomCheckout,
+      features: randomFeatureArray,
+      description: randomDescription,
+      photos: randomPhotosArray,
+      location: {
+        y: locationY,
+        x: locationX,
+      }
+    });
+  }
+  return announcementArray;
+};
+
+let announcementArray = getArray();
+
 let renderPin = function (pins) {
-  const coordinateLeft = pins.x + PIN_OFFSET_X;
-  const coordinateTop = pins.y + PIN_OFFSET_Y;
+  const coordinateLeft = pins.location.x + PIN_OFFSET_X;
+  const coordinateTop = pins.location.y + PIN_OFFSET_Y;
   let pinElement = advertTemplate.cloneNode(true);
-  pinElement.style = `left: ${coordinateLeft}px;` + ` ` + `top: ${coordinateTop}px;`;
+  pinElement.style = `left: ${coordinateLeft}px; top: ${coordinateTop}px;`;
   pinElement.querySelector(`img`).src = pins.avatar;
-  pinElement.querySelector(`img`).src = pins.title;
+  pinElement.querySelector(`img`).alt = pins.title;
 
   return pinElement;
 };
 
-const fragment = document.createDocumentFragment();
 for (let i = 0; i < announcementArray.length; i++) {
   fragment.appendChild(renderPin(announcementArray[i]));
 }
