@@ -47,7 +47,7 @@ const PIN_OFFSET_Y = 84;
 const PIN_OFFSET_X = 31;
 
 const mapDialog = document.querySelector(`.map`);
-mapDialog.classList.remove(`map--faded`);
+// mapDialog.classList.remove(`map--faded`);
 
 const announcementPins = document.querySelector(`.map__pins`);
 const advertTask = document.querySelector(`#pin`).content;
@@ -108,7 +108,7 @@ let getArray = function () {
     announcementArray.push({
       avatar: randomAvatar,
       title: randomTitle,
-      adress: `${locationX}, ${locationY}`,
+      address: `${locationX}, ${locationY}`,
       price: randomPrice,
       type: randomType,
       rooms: randomRooms,
@@ -140,7 +140,199 @@ let renderPin = function (pins) {
   return pinElement;
 };
 
-for (let i = 0; i < announcementArray.length; i++) {
-  fragment.appendChild(renderPin(announcementArray[i]));
+const renderFragment = function () {
+  for (let i = 0; i < announcementArray.length; i++) {
+    fragment.appendChild(renderPin(announcementArray[i]));
+  }
+  announcementPins.appendChild(fragment);
+};
+
+// 3.2 Личный проект: больше деталей (часть 2)
+const cardTask = document.querySelector(`#card`).content;
+const cardTemplate = cardTask.querySelector(`.popup`);
+const appartmentTypeTranslation = {
+  flat: `Квартира`,
+  bungalow: `Бунгало`,
+  house: `Дом`,
+  palace: `Дворец`
+};
+
+const mapFiltersContainer = document.querySelector(`.map__filters-container`);
+
+let renderPopup = function (information) {
+  let popupElement = cardTemplate.cloneNode(true);
+  popupElement.querySelector(`.popup__title`).textContent = information.title;
+  popupElement.querySelector(`.popup__text--address`).textContent = information.address;
+  popupElement.querySelector(`.popup__text--price`).textContent = information.price + `₽/ночь`;
+  popupElement.querySelector(`.popup__type`).textContent = appartmentTypeTranslation[information.type];
+  popupElement.querySelector(`.popup__text--capacity`).textContent = `${information.rooms} комнаты для ${information.guests} гостей`;
+  popupElement.querySelector(`.popup__text--time`).textContent = `Заезд после ${information.checkin}, выезд до ${information.checkout}`;
+  // Не получается здесь. Если я делаю так,
+  // то на странице отображается весь список удобств (как в разметке),
+  // когда на самом деле из этого списка  в случайно сгенерированном только 2 удобства.
+  // Думаю, что у меня не получается записать правильно каждое удобство в отлельный тег li  с соответствующим классом
+  popupElement.querySelector(`.popup__feature`).length = information.features.length;
+  popupElement.querySelector(`.popup__description`).textContent = information.description;
+  popupElement.querySelector(`.popup__avatar`).src = information.avatar;
+  // Здесь похожая проблема, у меня  не получается записать каждую строку массива фотографий в отдельный тег img.
+  // Пробовала так, но тегов img больше не становится, а src = unknown.
+
+  // popupElement.querySelector(`.popup__photos`).src = information.photos;
+
+  const photoPopup = popupElement.querySelector(`.popup__photo`);
+  // let length = Math.min(getObjectArray(PHOTOS).length, popupElement.length);
+
+  for (let i = 0; i < getObjectArray(PHOTOS).length; i++) {
+    // popupElement.querySelector(`.popup__photos`).appendChild(photoPopup[i]);
+    photoPopup.length = information.photos.length;
+    photoPopup[i].src = information.photos[i];
+  }
+
+  return popupElement;
+};
+
+const renderPopupFragment = function () {
+  for (let i = 0; i < announcementArray.length; i++) {
+    fragment.appendChild(renderPopup(announcementArray[i]));
+  }
+  mapFiltersContainer.before(fragment);
+};
+
+// 4.1 задание
+const elementsFieldset = document.querySelectorAll(`.ad-form__element`);
+const form = document.querySelector(`.ad-form`);
+const titleInput = form.querySelector(`#title`);
+const mapFilters = document.querySelector(`.map__filters`);
+const MIN_TITLE_LENGTH = 30;
+const MAX_TITLE_LENGTH = 100;
+for (let elementFieldset of elementsFieldset) {
+  elementFieldset.setAttribute(`disabled`, `true`);
 }
-announcementPins.appendChild(fragment);
+
+const pinMain = document.querySelector(`.map__pin--main`);
+let addressInput = document.querySelector(`#address`);
+
+const pinMainActiveCoordinateX = 570 + 33;
+const pinMainActiveCoordinateY = 375 + 33;
+const pinMaininActiveCoordinateX = 570;
+const pinMaininActiveCoordinateY = 375;
+
+addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
+
+let onPinMainMousedown = function () {
+  for (let elementFieldset of elementsFieldset) {
+    elementFieldset.removeAttribute(`disabled`);
+  }
+  mapDialog.classList.remove(`map--faded`);
+  form.classList.remove(`.ad-form--disabled`);
+  mapFilters.classList.remove(`.map__filters--disabled`);
+  addressInput.value = `${pinMainActiveCoordinateX}, ${pinMainActiveCoordinateY}`;
+  renderFragment();
+  renderPopupFragment();
+};
+
+pinMain.addEventListener(`mousedown`, function (evt) {
+  if (evt.button === 0) {
+    onPinMainMousedown();
+  }
+});
+
+pinMain.addEventListener(`keydown`, function (evt) {
+  if (evt.keyCode === 13) {
+    onPinMainMousedown();
+  }
+});
+
+
+titleInput.addEventListener(`input`, function () {
+  const valueLength = titleInput.value.length;
+  if (valueLength < MIN_TITLE_LENGTH) {
+    titleInput.setCustomValidity(`Еще ` + (MIN_TITLE_LENGTH - valueLength) + ` символов`);
+  } else if (valueLength > MAX_TITLE_LENGTH) {
+    titleInput.setCustomValidity(`Удалите лишние ` + (valueLength - MAX_TITLE_LENGTH) + ` симв.`);
+  } else {
+    titleInput.setCustomValidity(``);
+  }
+  titleInput.reportValidity();
+});
+
+
+const roomNumberInput = form.querySelector(`#room_number`);
+const capacityInput = form.querySelector(`#capacity`);
+
+form.addEventListener(`change`, function () {
+  if (capacityInput.value === `1` && roomNumberInput.value !== `1`) {
+    roomNumberInput.setCustomValidity(`Для 1 гостя может быть доступна только ${roomNumberInput.value = `1`} комната`);
+  } else if (capacityInput.value === `2` && roomNumberInput.value !== `2` && roomNumberInput.value !== `1`) {
+    roomNumberInput.setCustomValidity(`Для 2 гостей может быть доступно от ${roomNumberInput.value = `1`} до ${roomNumberInput.value = `2`} комнат`);
+  } else if (capacityInput.value === `3` && roomNumberInput.value !== `3` && roomNumberInput.value !== `2` && roomNumberInput.value !== `1`) {
+    roomNumberInput.setCustomValidity(`Для 3 гостей может быть доступно от ${roomNumberInput.value = `1`} до ${roomNumberInput.value = `3`} комнат`);
+  } else if (capacityInput.value === `0` && roomNumberInput.value !== `100`) {
+    roomNumberInput.setCustomValidity(`При выборе опции "не для гостей" может быть доступно только ${roomNumberInput.value = `100`}  комнат`);
+  } else {
+    roomNumberInput.setCustomValidity(``);
+  }
+  roomNumberInput.reportValidity();
+});
+
+
+const priceInput = form.querySelector(`#price`);
+const typeField = form.querySelector(`#type`);
+const MAX_INPUT_PRICE = 1000000;
+
+let houseTypes = {
+  'palace': {
+    min: 10000,
+    placeholder: `10000`
+  },
+  'flat': {
+    min: 1000,
+    placeholder: `1000`
+  },
+  'house': {
+    min: 5000,
+    placeholder: `5000`
+  },
+  'bungalow': {
+    min: 0,
+    placeholder: `0`
+  },
+};
+
+let onTypeFieldChange = function () {
+  priceInput.placeholder = houseTypes[typeField.value].placeholder;
+  priceInput.min = houseTypes[typeField.value].min;
+  const minCost = priceInput.value.length < priceInput.min ? `Минимальная стоимость должна составлять ${priceInput.min}` : ``;
+  priceInput.setCustomValidity(minCost);
+  priceInput.reportValidity();
+};
+
+typeField.addEventListener(`change`, function () {
+  onTypeFieldChange();
+});
+// Также хотела установить setCustomValidity параллельно не только для минимального значения,
+// но и для максимального значения цены. В итоге пропадает как «первое сообщение», так и второе
+// let onPriceInputChange = function () {
+  // const maxCost = priceInput.value.length > MAX_INPUT_PRICE ? `Максимальная стоимость должна составлять ${MAX_PRICE}` : ``;
+  // priceInput.setCustomValidity(maxCost);
+  // priceInput.reportValidity();
+// };
+
+// form.addEventListener(`change`, function () {
+  // onPriceInputChange();
+// });
+
+const timeIn = form.querySelector(`#timein`);
+const timeOut = form.querySelector(`#timeout`);
+let onTimeInChange = function () {
+  timeOut.value = timeIn.value;
+};
+
+timeIn.addEventListener(`change`, function () {
+  onTimeInChange();
+});
+
+
+const submitButton = document.querySelector(`.ad-form__submit`);
+submitButton.addEventListener(`submit`, function () {
+});
