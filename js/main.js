@@ -45,14 +45,14 @@ const PHOTOS = [
 
 const PIN_OFFSET_Y = 84;
 const PIN_OFFSET_X = 31;
+const MOUSE_LEFT_BUTTON = 0;
+const KEY_ENTER = 13;
 
 const mapDialog = document.querySelector(`.map`);
 
 const announcementPins = document.querySelector(`.map__pins`);
 const advertTask = document.querySelector(`#pin`).content;
 const advertTemplate = advertTask.querySelector(`.map__pin`);
-
-const fragment = document.createDocumentFragment();
 
 const cardTask = document.querySelector(`#card`).content;
 const cardTemplate = cardTask.querySelector(`.popup`);
@@ -105,18 +105,14 @@ const pinMaininActiveCoordinateY = 375;
 
 const roomNumberInput = form.querySelector(`#room_number`);
 const capacityInput = form.querySelector(`#capacity`);
-const VALUE_0 = `0`;
-const VALUE_1 = `1`;
-const VALUE_2 = `2`;
-const VALUE_3 = `3`;
-const VALUE_100 = `100`;
+const CAPACITY_0 = 0;
+const ROOM_NUMBER_100 = 100;
 
 const timeIn = form.querySelector(`#timein`);
 const timeOut = form.querySelector(`#timeout`);
 
 function getRandomIntInclusive(min, max) {
-  let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-  return randomNumber;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 let getAvatar = function () {
@@ -128,36 +124,22 @@ let getAvatar = function () {
 };
 const avatarArray = getAvatar();
 
-let getRandomLength = function (arr) {
-  return Math.floor(Math.random() * arr.length);
+let getRandomNumber = function (max) {
+  return Math.floor(Math.random() * max);
 };
 
 const getRandomParameter = function (arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[getRandomNumber(arr.length)];
 };
 
 const getObjectArray = function (arr) {
   let someArray = [];
-  for (let i = 0; i < getRandomLength(arr); i++) {
+  for (let i = 0; i < getRandomNumber(arr.length); i++) {
     someArray.push(getRandomParameter(arr));
   }
   return someArray;
 };
-// let getRandomLength = function (max) {
-  // return Math.floor(Math.random() * max);
-// };
 
-// const getRandomParameter = function (max) {
-//  return [Math.floor(Math.random() * max)];
-// };
-
-// const getObjectArray = function (max) {
-//  let someArray = [];
-//  for (let i = 0; i < getRandomLength(max); i++) {
-//  someArray.push(getRandomParameter(max));
-//  }
-//  return someArray;
-// };
 let getArray = function () {
   const announcementArray = [];
   for (let i = 0; i < 8; i++) {
@@ -180,25 +162,6 @@ let getArray = function () {
         x: getRandomIntInclusive(MIN_X, MAX_X),
       }
     });
-    // announcementArray.push({
-    //  avatar: getRandomParameter(avatarArray.length),
-    //  title: getRandomParameter(ADVERT_TITLE.length),
-    //  address: `${getRandomIntInclusive(MIN_X, MAX_X)}, ${getRandomIntInclusive(MIN_Y, MAX_Y)}`,
-    //  price: getRandomIntInclusive(MIN_PRICE, MAX_PRICE),
-    //  type: getRandomParameter(ADVERT_TYPE.length),
-    //  rooms: getRandomIntInclusive(MIN_ROOMS, MAX_ROOMS),
-    //  guests: getRandomIntInclusive(MIN_GUESTS, MAX_GUESTS),
-    //  checkin: getRandomParameter(CHECKIN.length),
-    //  checkout: getRandomParameter(CHECKOUT.length),
-    //  features: getObjectArray(FEATURES),
-    //  description: getRandomParameter(ADVERT_DESCRIPTION.length),
-    //  photos: getObjectArray(PHOTOS),
-    //  location: {
-    //    y: getRandomIntInclusive(MIN_Y, MAX_Y),
-    //    x: getRandomIntInclusive(MIN_X, MAX_X),
-    //  }
-    // });
-
   }
   return announcementArray;
 };
@@ -217,6 +180,8 @@ let renderPin = function (pins) {
 };
 
 const renderFragment = function () {
+  const fragment = document.createElement(`div`);
+  fragment.classList.add(`pins`);
   for (let i = 0; i < announcementArray.length; i++) {
     fragment.appendChild(renderPin(announcementArray[i]));
   }
@@ -264,53 +229,23 @@ let renderPopup = function (information) {
   popupPhotoContainer.innerHTML = ``;
   popupPhotoContainer.appendChild(fragmentPhoto);
 
-  if (information.title === undefined) {
-    popupElement.querySelector(`.popup__title`).classList.add(`visually-hidden`);
-  }
-  if (information.address === undefined) {
-    popupElement.querySelector(`.popup__text--address`).classList.add(`visually-hidden`);
-  }
-  if (information.price === undefined) {
-    popupElement.querySelector(`.popup__text--price`).classList.add(`visually-hidden`);
-  }
-  if (information.type === undefined) {
-    popupElement.querySelector(`.popup__type`).classList.add(`visually-hidden`);
-  }
-  if (information.rooms === undefined || information.guests === undefined) {
-    popupElement.querySelector(`.popup__text--capacity`).classList.add(`visually-hidden`);
-  }
-  if (information.checkin === undefined || information.checkout === undefined) {
-    popupElement.querySelector(`.popup__text--capacity`).classList.add(`visually-hidden`);
-  }
-  if (information.description === undefined) {
-    popupElement.querySelector(`.popup__description`).classList.add(`visually-hidden`);
-  }
-  if (information.avatar === undefined) {
-    popupElement.querySelector(`.popup__avatar`).classList.add(`visually-hidden`);
-  }
-  if (information.photos.length === undefined) {
-    popupPhotoContainer.classList.add(`visually-hidden`);
-  }
   return popupElement;
 };
 
 const renderPopupFragment = function () {
-  for (let i = 0; i < announcementArray.length; i++) {
-    fragment.appendChild(renderPopup(announcementArray[i]));
-  }
-  mapFiltersContainer.before(fragment);
+  mapFiltersContainer.before(renderPopup(announcementArray[0]));
 };
 
 // 4.1 задание
 for (let elementFieldset of elementsFieldset) {
-  elementFieldset.setAttribute(`disabled`, `true`);
+  elementFieldset.disabled = true;
 }
 
 addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
 
 let onPinMainMousedown = function () {
   for (let elementFieldset of elementsFieldset) {
-    elementFieldset.removeAttribute(`disabled`);
+    elementFieldset.disabled = false;
   }
   mapDialog.classList.remove(`map--faded`);
   form.classList.remove(`ad-form--disabled`);
@@ -321,13 +256,13 @@ let onPinMainMousedown = function () {
 };
 
 pinMain.addEventListener(`mousedown`, function (evt) {
-  if (evt.button === 0) {
+  if (evt.button === MOUSE_LEFT_BUTTON) {
     onPinMainMousedown();
   }
 });
 
 pinMain.addEventListener(`keydown`, function (evt) {
-  if (evt.keyCode === 13) {
+  if (evt.keyCode === KEY_ENTER) {
     onPinMainMousedown();
   }
 });
@@ -347,24 +282,22 @@ titleInput.addEventListener(`input`, function () {
 });
 
 const onroomNumberChange = function () {
-  if (capacityInput.value === VALUE_1 && roomNumberInput.value !== VALUE_1) {
-    roomNumberInput.setCustomValidity(`Для 1 гостя может быть доступна только ${roomNumberInput.value = VALUE_1} комната`);
-  } else if (capacityInput.value === VALUE_2 && roomNumberInput.value !== VALUE_2 && roomNumberInput.value !== VALUE_1) {
-    roomNumberInput.setCustomValidity(`Для 2 гостей может быть доступно от ${roomNumberInput.value = VALUE_1} до ${roomNumberInput.value = VALUE_2} комнат`);
-  } else if (capacityInput.value === VALUE_3 && roomNumberInput.value !== VALUE_3 && roomNumberInput.value !== VALUE_2 && roomNumberInput.value !== VALUE_1) {
-    roomNumberInput.setCustomValidity(`Для 3 гостей может быть доступно от ${roomNumberInput.value = VALUE_1} до ${roomNumberInput.value = VALUE_3} комнат`);
-  } else if (capacityInput.value === VALUE_0 && roomNumberInput.value !== VALUE_100) {
-    roomNumberInput.setCustomValidity(`При выборе опции "не для гостей" может быть доступно только ${roomNumberInput.value = VALUE_100}  комнат`);
-  } else {
-    roomNumberInput.setCustomValidity(``);
-  }
+  const INVALID_CAPACITY = `Недопустимое количество комнат`;
+  const VALIDATION_SUCCESS = ``;
+  const capacity = parseInt(capacityInput.value, 10);
+  const roomNumber = parseInt(roomNumberInput.value, 10);
+  const message = roomNumber < capacity || (capacity === CAPACITY_0 && roomNumber < ROOM_NUMBER_100) ? INVALID_CAPACITY : VALIDATION_SUCCESS;
+  roomNumberInput.setCustomValidity(message);
   roomNumberInput.reportValidity();
 };
 
-form.addEventListener(`change`, function () {
+roomNumberInput.addEventListener(`change`, function () {
   onroomNumberChange();
 });
 
+capacityInput.addEventListener(`change`, function () {
+  onroomNumberChange();
+});
 
 let onTypeFieldChange = function () {
   priceInput.placeholder = houseTypes[typeField.value].placeholder;
@@ -396,40 +329,18 @@ timeIn.addEventListener(`change`, function () {
   onTimeInChange();
 });
 
-
-// const submitButton = document.querySelector(`.ad-form__submit`);
-// const successTask = document.querySelector(`#success`).content;
-// const successTemplate = successTask.querySelector(`.success`);
-// const main = document.querySelector(`.main`);
-
-// 2.8. Нажатие на кнопку .ad-form__reset сбрасывает страницу в исходное неактивное состояние без перезагрузки, а также:
-// •	все заполненные поля возвращаются в изначальное состояние, в том числе фильтры;
-// •	метки похожих объявлений и карточка активного объявления удаляются;
-// •	метка адреса возвращается в исходное положение;
-// •	значение поля адреса корректируется соответственно положению метки;
-
-// ВОПРОС по 2.8 Не получается сделать так, чтобы все заполненные поля возвращались в изначальное состояние (обнулялись), кроме значение поля адреса, которое корректируется соответственно положению метки
-// Для этого обнуляю все поля, кроме поля с id = 'address' и добавляю в слушатель событтий evt.preventDefault(), но поля не становятся пустыми
-
-const allInputsForm = form.querySelectorAll(`input`);
-let cleanInputs = function () {
-  for (let i = 0; i < allInputsForm.length; i++) {
-    const inputElement = allInputsForm[i];
-    if (inputElement.id !== `address`) {
-      inputElement.value = ``;
-    }
-  }
-};
-
 let pageInactivemake = function () {
   mapDialog.classList.add(`map--faded`);
+  form.classList.add(`ad-form--disabled`);
+  mapFilters.classList.add(`map__filters--disabled`);
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
-  announcementPins.innerHTML = ``;
+  document.querySelector(`.pins`).remove();
+  document.querySelector(`.popup`).remove();
 };
 const resetButton = document.querySelector(`.ad-form__reset`);
 
 resetButton.addEventListener(`click`, function (evt) {
   evt.preventDefault();
-  cleanInputs();
+  form.reset();
   pageInactivemake();
 });
