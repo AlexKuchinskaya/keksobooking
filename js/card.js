@@ -10,8 +10,8 @@
     house: `Дом`,
     palace: `Дворец`
   };
-  let renderPopup = function (information) {
-    let popupElement = cardTemplate.cloneNode(true);
+  const renderPopup = function (information) {
+    const popupElement = cardTemplate.cloneNode(true);
     popupElement.querySelector(`.popup__title`).textContent = information.title;
     popupElement.querySelector(`.popup__text--address`).textContent = information.address;
     popupElement.querySelector(`.popup__text--price`).textContent = `${information.price} ₽/ночь`;
@@ -39,7 +39,7 @@
     const fragmentPhoto = document.createDocumentFragment();
 
     information.photos.forEach((element) => {
-      let photoElement = photoPopup.cloneNode(true);
+      const photoElement = photoPopup.cloneNode(true);
       photoElement.src = element;
       photoElement.style.width = `45`;
       photoElement.style.height = `40`;
@@ -53,8 +53,8 @@
     return popupElement;
   };
 
-  let renderPopupFragment = () => {
-    mapFiltersContainer.before(renderPopup(window.data()[0]));
+  const renderPopupFragment = () => {
+    mapFiltersContainer.before(renderPopup(window.hotels[0]));
   };
-  window.card = renderPopupFragment;
+  window.renderPopupFragment = renderPopupFragment;
 })();

@@ -25,8 +25,9 @@
   const typeField = form.querySelector(`#type`);
   const timeIn = form.querySelector(`#timein`);
   const timeOut = form.querySelector(`#timeout`);
+  const resetButton = document.querySelector(`.ad-form__reset`);
 
-  let houseTypes = {
+  const houseTypes = {
     'palace': {
       min: 10000,
       placeholder: `10000`
@@ -45,13 +46,7 @@
     },
   };
 
-  for (let elementFieldset of elementsFieldset) {
-    elementFieldset.disabled = true;
-  }
-
-  addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
-
-  let onPinMainMousedown = () => {
+  const onPinMainMousedown = () => {
     for (let elementFieldset of elementsFieldset) {
       elementFieldset.disabled = false;
     }
@@ -59,8 +54,45 @@
     form.classList.remove(`ad-form--disabled`);
     mapFilters.classList.remove(`map__filters--disabled`);
     addressInput.value = `${pinMainActiveCoordinateX}, ${pinMainActiveCoordinateY}`;
-    window.pin(window.data());
-    window.card();
+    window.renderPins(window.hotels);
+    window.renderPopupFragment();
+  };
+
+  const onroomNumberChange = () => {
+    const INVALID_CAPACITY = `Недопустимое количество комнат`;
+    const VALIDATION_SUCCESS = ``;
+    const capacity = parseInt(capacityInput.value, 10);
+    const roomNumber = parseInt(roomNumberInput.value, 10);
+    const message = roomNumber < capacity || (capacity === CAPACITY_0 && roomNumber < ROOM_NUMBER_100) ? INVALID_CAPACITY : VALIDATION_SUCCESS;
+    roomNumberInput.setCustomValidity(message);
+    roomNumberInput.reportValidity();
+  };
+
+  const onTypeFieldChange = () => {
+    priceInput.placeholder = houseTypes[typeField.value].placeholder;
+    priceInput.min = houseTypes[typeField.value].min;
+    const minCost = priceInput.value.length < priceInput.min ? `Минимальная стоимость должна составлять ${priceInput.min}` : ``;
+    priceInput.setCustomValidity(minCost);
+    priceInput.reportValidity();
+  };
+
+  const onPriceInputChange = () => {
+    const maxCost = parseInt(priceInput.value, 10) > MAX_INPUT_PRICE ? `Максимальная стоимость должна составлять ${MAX_INPUT_PRICE}` : ``;
+    priceInput.setCustomValidity(maxCost);
+    priceInput.reportValidity();
+  };
+
+  const onTimeInChange = () => {
+    timeOut.value = timeIn.value;
+  };
+
+  const pageInactivemake = () => {
+    mapDialog.classList.add(`map--faded`);
+    form.classList.add(`ad-form--disabled`);
+    mapFilters.classList.add(`map__filters--disabled`);
+    addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
+    document.querySelector(`.pins`).remove();
+    document.querySelector(`.popup`).remove();
   };
 
   pinMain.addEventListener(`mousedown`, function (evt) {
@@ -88,16 +120,6 @@
     titleInput.reportValidity();
   });
 
-  const onroomNumberChange = () => {
-    const INVALID_CAPACITY = `Недопустимое количество комнат`;
-    const VALIDATION_SUCCESS = ``;
-    const capacity = parseInt(capacityInput.value, 10);
-    const roomNumber = parseInt(roomNumberInput.value, 10);
-    const message = roomNumber < capacity || (capacity === CAPACITY_0 && roomNumber < ROOM_NUMBER_100) ? INVALID_CAPACITY : VALIDATION_SUCCESS;
-    roomNumberInput.setCustomValidity(message);
-    roomNumberInput.reportValidity();
-  };
-
   roomNumberInput.addEventListener(`change`, function () {
     onroomNumberChange();
   });
@@ -106,49 +128,27 @@
     onroomNumberChange();
   });
 
-  let onTypeFieldChange = () => {
-    priceInput.placeholder = houseTypes[typeField.value].placeholder;
-    priceInput.min = houseTypes[typeField.value].min;
-    const minCost = priceInput.value.length < priceInput.min ? `Минимальная стоимость должна составлять ${priceInput.min}` : ``;
-    priceInput.setCustomValidity(minCost);
-    priceInput.reportValidity();
-  };
-
   typeField.addEventListener(`change`, function () {
     onTypeFieldChange();
   });
-
-  let onPriceInputChange = () => {
-    const maxCost = parseInt(priceInput.value, 10) > MAX_INPUT_PRICE ? `Максимальная стоимость должна составлять ${MAX_INPUT_PRICE}` : ``;
-    priceInput.setCustomValidity(maxCost);
-    priceInput.reportValidity();
-  };
 
   priceInput.addEventListener(`input`, function () {
     onPriceInputChange();
   });
 
-  let onTimeInChange = () => {
-    timeOut.value = timeIn.value;
-  };
-
   timeIn.addEventListener(`change`, function () {
     onTimeInChange();
   });
-
-  let pageInactivemake = () => {
-    mapDialog.classList.add(`map--faded`);
-    form.classList.add(`ad-form--disabled`);
-    mapFilters.classList.add(`map__filters--disabled`);
-    addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
-    document.querySelector(`.pins`).remove();
-    document.querySelector(`.popup`).remove();
-  };
-  const resetButton = document.querySelector(`.ad-form__reset`);
 
   resetButton.addEventListener(`click`, function (evt) {
     evt.preventDefault();
     form.reset();
     pageInactivemake();
   });
+
+  for (let elementFieldset of elementsFieldset) {
+    elementFieldset.disabled = true;
+  }
+
+  addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
 })();

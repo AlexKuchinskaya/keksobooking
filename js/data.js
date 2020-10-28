@@ -43,15 +43,16 @@
   ];
 
   let getAvatar = () => {
-    let avatarArr = [];
+    const avatarArr = [];
     for (let i = 1; i <= 8; i++) {
       avatarArr.push(`img/avatars/user0${i}.png`);
     }
     return avatarArr;
   };
   const avatarArray = getAvatar();
-  let announcementArray = [];
-  let getArray = () => {
+
+  const createHotels = () => {
+    let announcementArray = [];
     for (let i = 0; i < 8; i++) {
 
       announcementArray.push({
@@ -76,5 +77,7 @@
     return announcementArray;
   };
 
-  window.data = getArray;
+  window.createHotels = createHotels;
+  const hotels = createHotels();
+  window.hotels = hotels;
 })();
