@@ -8,10 +8,17 @@
   const CAPACITY_0 = 0;
   const ROOM_NUMBER_100 = 100;
   const MAX_INPUT_PRICE = 1000000;
-  const pinMainActiveCoordinateX = 570 + 33;
-  const pinMainActiveCoordinateY = 375 + 33;
+  // const pinMainActiveCoordinateX = 570 + 33;
+  // const pinMainActiveCoordinateY = 375 + 33;
+  const MIN_Y = 130;
+  const MAX_Y = 630;
+  const MIN_X = 0;
+  const MAX_X_RIGHT = 38;
+  const MAX_X_LEFT = -28;
   const pinMaininActiveCoordinateX = 570;
   const pinMaininActiveCoordinateY = 375;
+  const pinActiveHeight = 84;
+  const pinActiveWidth = 33;
   const elementsFieldset = document.querySelectorAll(`.ad-form__element`);
   const form = document.querySelector(`.ad-form`);
   const addressInput = document.querySelector(`#address`);
@@ -53,7 +60,7 @@
     mapDialog.classList.remove(`map--faded`);
     form.classList.remove(`ad-form--disabled`);
     mapFilters.classList.remove(`map__filters--disabled`);
-    addressInput.value = `${pinMainActiveCoordinateX}, ${pinMainActiveCoordinateY}`;
+    // addressInput.value = `${pinMainActiveCoordinateX}, ${pinMainActiveCoordinateY}`;
     window.renderPins(window.hotels);
     window.renderPopupFragment();
   };
@@ -98,6 +105,61 @@
   pinMain.addEventListener(`mousedown`, function (evt) {
     if (evt.button === MOUSE_LEFT_BUTTON) {
       onPinMainMousedown();
+      // 5.2 Личный проект: модуляция (часть 2)
+      evt.preventDefault();
+
+      let startCoords = {
+        x: evt.clientX,
+        y: evt.clientY
+      };
+
+      let onMouseMove = function (moveEvt) {
+        moveEvt.preventDefault();
+
+        let shift = {
+          x: startCoords.x - moveEvt.clientX,
+          y: startCoords.y - moveEvt.clientY
+        };
+
+        startCoords = {
+          x: moveEvt.clientX,
+          y: moveEvt.clientY
+        };
+
+        let limitY = function (topPosition) {
+          if (topPosition < MIN_Y) {
+            return MIN_Y;
+          }
+          if (topPosition > MAX_Y) {
+            return MAX_Y;
+          }
+          return topPosition;
+        };
+
+        let limitX = function (leftPosition, parentElement) {
+          if (leftPosition > (parentElement.offsetWidth - MAX_X_RIGHT)) {
+            return (parentElement.offsetWidth - MAX_X_RIGHT);
+          }
+          if (leftPosition < MIN_X) {
+            return MAX_X_LEFT;
+          }
+          return leftPosition;
+        };
+        const pinMainParent = document.querySelector(`.map__overlay`);
+        pinMain.style.top = `${limitY(pinMain.offsetTop - shift.y)}px`;
+        pinMain.style.left = `${limitX((pinMain.offsetLeft - shift.x), pinMainParent)}px`;
+        addressInput.value = `${limitY(pinMain.offsetTop - shift.y) + pinActiveWidth}, ${limitX((pinMain.offsetLeft - shift.x), pinMainParent) + pinActiveHeight}`;
+      };
+
+      let onMouseUp = function (upEvt) {
+        upEvt.preventDefault();
+        document.removeEventListener(`mousemove`, onMouseMove);
+        document.removeEventListener(`mouseup`, onMouseUp);
+
+      };
+
+      document.addEventListener(`mousemove`, onMouseMove);
+      document.addEventListener(`mouseup`, onMouseUp);
     }
   });
 
