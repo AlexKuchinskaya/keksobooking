@@ -1,5 +1,4 @@
 'use strict';
-// 4.1 задание
 (function () {
   const MOUSE_LEFT_BUTTON = 0;
   const KEY_ENTER = 13;
@@ -8,10 +7,15 @@
   const CAPACITY_0 = 0;
   const ROOM_NUMBER_100 = 100;
   const MAX_INPUT_PRICE = 1000000;
-  const pinMainActiveCoordinateX = 570 + 33;
-  const pinMainActiveCoordinateY = 375 + 33;
+  const MIN_Y = 130;
+  const MAX_Y = 630;
+  const MIN_X = 0;
+  const MAX_X_RIGHT = 38;
+  const MAX_X_LEFT = -28;
   const pinMaininActiveCoordinateX = 570;
   const pinMaininActiveCoordinateY = 375;
+  const pinActiveHeight = 84;
+  const pinActiveWidth = 33;
   const elementsFieldset = document.querySelectorAll(`.ad-form__element`);
   const form = document.querySelector(`.ad-form`);
   const addressInput = document.querySelector(`#address`);
@@ -26,6 +30,7 @@
   const timeIn = form.querySelector(`#timein`);
   const timeOut = form.querySelector(`#timeout`);
   const resetButton = document.querySelector(`.ad-form__reset`);
+  const pinMainParent = document.querySelector(`.map__overlay`);
 
   const houseTypes = {
     'palace': {
@@ -53,7 +58,6 @@
     mapDialog.classList.remove(`map--faded`);
     form.classList.remove(`ad-form--disabled`);
     mapFilters.classList.remove(`map__filters--disabled`);
-    addressInput.value = `${pinMainActiveCoordinateX}, ${pinMainActiveCoordinateY}`;
     window.renderPins(window.hotels);
     window.renderPopupFragment();
   };
@@ -98,6 +102,61 @@
   pinMain.addEventListener(`mousedown`, function (evt) {
     if (evt.button === MOUSE_LEFT_BUTTON) {
       onPinMainMousedown();
+      // 5.2 Личный проект: модуляция (часть 2)
+      evt.preventDefault();
+
+      let startCoords = {
+        x: evt.clientX,
+        y: evt.clientY
+      };
+
+      const onMouseMove = (moveEvt) => {
+        moveEvt.preventDefault();
+
+        let shift = {
+          x: startCoords.x - moveEvt.clientX,
+          y: startCoords.y - moveEvt.clientY
+        };
+
+        startCoords = {
+          x: moveEvt.clientX,
+          y: moveEvt.clientY
+        };
+
+        const limitY = (topPosition) => {
+          if (topPosition < MIN_Y) {
+            return MIN_Y;
+          }
+          if (topPosition > MAX_Y) {
+            return MAX_Y;
+          }
+          return topPosition;
+        };
+
+        const limitX = (leftPosition, parentElement) => {
+          if (leftPosition > (parentElement.offsetWidth - MAX_X_RIGHT)) {
+            return (parentElement.offsetWidth - MAX_X_RIGHT);
+          }
+          if (leftPosition < MIN_X) {
+            return MAX_X_LEFT;
+          }
+          return leftPosition;
+        };
+        pinMain.style.top = `${limitY(pinMain.offsetTop - shift.y)}px`;
+        pinMain.style.left = `${limitX((pinMain.offsetLeft - shift.x), pinMainParent)}px`;
+        addressInput.value = `${limitY(pinMain.offsetTop - shift.y) + pinActiveWidth}, ${limitX((pinMain.offsetLeft - shift.x), pinMainParent) + pinActiveHeight}`;
+      };
+
+      let onMouseUp = (upEvt) => {
+        upEvt.preventDefault();
+        onMouseMove(upEvt);
+        document.removeEventListener(`mousemove`, onMouseMove);
+        document.removeEventListener(`mouseup`, onMouseUp);
+
+      };
+
+      document.addEventListener(`mousemove`, onMouseMove);
+      document.addEventListener(`mouseup`, onMouseUp);
     }
   });
 
@@ -107,7 +166,7 @@
     }
   });
 
-  titleInput.addEventListener(`input`, function () {
+  titleInput.addEventListener(`input`, () => {
     const valueLength = titleInput.value.length;
     if (valueLength < MIN_TITLE_LENGTH) {
       titleInput.setCustomValidity(`Еще ${MIN_TITLE_LENGTH - valueLength} символов`);
@@ -120,27 +179,27 @@
     titleInput.reportValidity();
   });
 
-  roomNumberInput.addEventListener(`change`, function () {
+  roomNumberInput.addEventListener(`change`, () => {
     onroomNumberChange();
   });
 
-  capacityInput.addEventListener(`change`, function () {
+  capacityInput.addEventListener(`change`, () => {
     onroomNumberChange();
   });
 
-  typeField.addEventListener(`change`, function () {
+  typeField.addEventListener(`change`, () => {
     onTypeFieldChange();
   });
 
-  priceInput.addEventListener(`input`, function () {
+  priceInput.addEventListener(`input`, () => {
     onPriceInputChange();
   });
 
-  timeIn.addEventListener(`change`, function () {
+  timeIn.addEventListener(`change`, () => {
     onTimeInChange();
   });
 
-  resetButton.addEventListener(`click`, function (evt) {
+  resetButton.addEventListener(`click`, (evt) => {
     evt.preventDefault();
     form.reset();
     pageInactivemake();
