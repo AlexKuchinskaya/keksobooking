@@ -58,7 +58,8 @@
     mapDialog.classList.remove(`map--faded`);
     form.classList.remove(`ad-form--disabled`);
     mapFilters.classList.remove(`map__filters--disabled`);
-    window.renderPins(window.hotels);
+    window.load(window.renderPins, window.errorPinHandler);
+    // window.renderPins(window.hotels);
     window.renderPopupFragment();
   };
 
