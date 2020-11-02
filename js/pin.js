@@ -7,38 +7,36 @@
   const advertTask = document.querySelector(`#pin`).content;
   const advertTemplate = advertTask.querySelector(`.map__pin`);
   const map = document.querySelector(`.map`);
+
   const renderPin = (pins) => {
     const coordinateLeft = pins.location.x + PIN_OFFSET_X;
     const coordinateTop = pins.location.y + PIN_OFFSET_Y;
     let pinElement = advertTemplate.cloneNode(true);
+    const pinImage = pinElement.querySelector(`img`);
     pinElement.style = `left: ${coordinateLeft}px; top: ${coordinateTop}px;`;
-    pinElement.querySelector(`img`).src = `${pins.author.avatar}`;
-    pinElement.querySelector(`img`).alt = `${pins.offer.title}`;
+    pinImage.src = pins.author.avatar;
+    pinImage.alt = pins.offer.title;
 
     return pinElement;
   };
 
+  let pinsData = [];
   const renderPins = (pins) => {
+    pinsData = pins;
     const fragment = document.createElement(`div`);
     fragment.classList.add(`pins`);
-    if (pins.length < MAX_PIN_COUNT) {
-      for (let i = 0; i < pins.length; i++) {
-        fragment.appendChild(renderPin(pins[i]));
-      }
-    } else {
-      for (let i = 0; i < MAX_PIN_COUNT; i++) {
-        fragment.appendChild(renderPin(pins[i]));
-      }
+    const iterations = pinsData.length < MAX_PIN_COUNT ? pinsData.length : MAX_PIN_COUNT;
+    for (let i = 0; i < iterations; i++) {
+      fragment.appendChild(renderPin(pinsData[i]));
     }
     announcementPins.appendChild(fragment);
   };
-  window.renderPins = renderPins;
 
-  const errorPinHandler = function (errorMessage) {
+  const errorPinHandler = (errorMessage) => {
     let errorServerMessage = document.createElement(`div`);
     errorServerMessage.classList.add(`map__error-server`);
     errorServerMessage.textContent = errorMessage;
     map.insertAdjacentElement(`afterbegin`, errorServerMessage);
   };
-  window.errorPinHandler = errorPinHandler;
+  window.pin = {renderPins, errorPinHandler};
 })();

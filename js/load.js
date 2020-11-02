@@ -6,27 +6,27 @@
   };
   const TIMEOUT_IN_MS = 1000;
 
-  window.load = function (onSuccess, onError) {
+  const load = (onSuccess, onError) =>{
     const xhr = new XMLHttpRequest();
     xhr.responseType = `json`;
+    xhr.timeout = TIMEOUT_IN_MS;
 
-    xhr.addEventListener(`load`, function () {
+    xhr.addEventListener(`load`, () => {
       if (xhr.status === STATUS_CODE.OK) {
         onSuccess(xhr.response);
       } else {
-        onError(`Статус ответа: ` + xhr.status + ` ` + xhr.statusText);
+        onError(`Статус ответа: ${xhr.status}  ${xhr.statusText}`);
       }
     });
-    xhr.addEventListener(`error`, function () {
+    xhr.addEventListener(`error`, () => {
       onError(`Произошла ошибка соединения`);
     });
-    xhr.addEventListener(`timeout`, function () {
-      onError(`Запрос не успел выполниться за ` + xhr.timeout + `мс`);
+    xhr.addEventListener(`timeout`, () => {
+      onError(`Запрос не успел выполниться за ${xhr.timeout} мс`);
     });
-
-    xhr.timeout = TIMEOUT_IN_MS;
 
     xhr.open(`GET`, URL);
     xhr.send();
   };
+  window.load = load;
 })();
