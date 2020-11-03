@@ -11,6 +11,7 @@
     house: `Дом`,
     palace: `Дворец`
   };
+
   const renderPopup = (information) => {
     const popupElement = cardTemplate.cloneNode(true);
     popupElement.querySelector(`.popup__title`).textContent = information.offer.title;
@@ -57,5 +58,6 @@
   const renderPopupFragment = (card) => {
     mapFiltersContainer.before(renderPopup(card[0]));
   };
+
   window.renderPopupFragment = renderPopupFragment;
 })();

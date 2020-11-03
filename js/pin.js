@@ -3,6 +3,7 @@
   const PIN_OFFSET_Y = 84;
   const PIN_OFFSET_X = 31;
   const MAX_PIN_COUNT = 8;
+  let pinsData = [];
   const announcementPins = document.querySelector(`.map__pins`);
   const advertTask = document.querySelector(`#pin`).content;
   const advertTemplate = advertTask.querySelector(`.map__pin`);
@@ -11,7 +12,7 @@
   const renderPin = (pins) => {
     const coordinateLeft = pins.location.x + PIN_OFFSET_X;
     const coordinateTop = pins.location.y + PIN_OFFSET_Y;
-    let pinElement = advertTemplate.cloneNode(true);
+    const pinElement = advertTemplate.cloneNode(true);
     const pinImage = pinElement.querySelector(`img`);
     pinElement.style = `left: ${coordinateLeft}px; top: ${coordinateTop}px;`;
     pinImage.src = pins.author.avatar;
@@ -20,7 +21,6 @@
     return pinElement;
   };
 
-  let pinsData = [];
   const renderPins = (pins) => {
     pinsData = pins;
     const fragment = document.createElement(`div`);
@@ -38,5 +38,6 @@
     errorServerMessage.textContent = errorMessage;
     map.insertAdjacentElement(`afterbegin`, errorServerMessage);
   };
+
   window.pin = {renderPins, errorPinHandler};
 })();

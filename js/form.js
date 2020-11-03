@@ -57,11 +57,13 @@
       placeholder: `0`
     },
   };
+
   const activateFieldsets = () => {
     for (let elementFieldsetsForm of fieldsetsForm) {
       elementFieldsetsForm.disabled = false;
     }
   };
+
   const disableFieldSets = () => {
     for (let elementFieldsetsForm of fieldsetsForm) {
       elementFieldsetsForm.disabled = true;
@@ -73,8 +75,8 @@
     mapDialog.classList.remove(`map--faded`);
     form.classList.remove(`ad-form--disabled`);
     mapFilters.classList.remove(`map__filters--disabled`);
-    window.load(window.pin.renderPins, window.errorPinHandler);
-    window.load(window.renderPopupFragment, window.errorPinHandler);
+    window.server.load(window.pin.renderPins, window.errorPinHandler);
+    window.server.load(window.renderPopupFragment, window.errorPinHandler);
   };
 
   const onRoomNumberChange = () => {
@@ -110,6 +112,67 @@
     addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
     document.querySelector(`.pins`).remove();
     document.querySelector(`.popup`).remove();
+  };
+
+  const renderSuccesPost = () => {
+    let fragmentSuccess = document.createElement(`div`);
+    const succesElement = successTemplate.cloneNode(true);
+    fragmentSuccess.appendChild(succesElement);
+    fragmentSuccess.classList.add(`succeded-form`);
+    mainBlock.insertAdjacentElement(`afterbegin`, fragmentSuccess);
+  };
+
+  const onSubmitSuccessClick = () => {
+    document.querySelector(`.succeded-form`).remove();
+    document.removeEventListener(`click`, onSubmitSuccessClick);
+  };
+
+  const onSubmitSuccessKeydown = () => {
+    document.querySelector(`.succeded-form`).remove();
+    document.removeEventListener(`keydown`, onSubmitSuccessKeydown);
+  };
+
+  const onSuccessSubmit = () => {
+    renderSuccesPost();
+    document.addEventListener(`click`, onSubmitSuccessClick);
+    document.addEventListener(`keydown`, (evt) => {
+      if (evt.keyCode === ESCAPE_BUTTON) {
+        onSubmitSuccessKeydown();
+      }
+    });
+    form.reset();
+    desactivatePage();
+    disableFieldSets();
+  };
+
+  const renderErrorPost = () => {
+    let fragmentError = document.createElement(`div`);
+    const errorElement = errorTemplate.cloneNode(true);
+    fragmentError.appendChild(errorElement);
+    fragmentError.classList.add(`error-form`);
+    mainBlock.insertAdjacentElement(`afterbegin`, fragmentError);
+  };
+
+  const onSubmitErrorClick = () => {
+    document.querySelector(`.error-form`).remove();
+    document.removeEventListener(`click`, onSubmitErrorClick);
+  };
+
+  const onSubmitErrorKeydown = () => {
+    document.querySelector(`.error-form`).remove();
+    document.removeEventListener(`keydown`, onSubmitErrorKeydown);
+  };
+
+  const onErrorSubmit = () => {
+    renderErrorPost();
+    document.addEventListener(`click`, onSubmitErrorClick);
+    document.addEventListener(`keydown`, (evt) => {
+      if (evt.keyCode === ESCAPE_BUTTON) {
+        onSubmitErrorKeydown();
+      }
+    });
+    const errorButtonMessage = document.querySelector(`.error__button`);
+    errorButtonMessage.addEventListener(`click`, onSubmitErrorClick);
   };
 
   pinMain.addEventListener(`mousedown`, (evt) => {
@@ -219,65 +282,8 @@
     desactivatePage();
   });
 
-  // 6.2 отправка формы
-  const renderSuccesPost = () => {
-    let fragmentSuccess = document.createElement(`div`);
-    const succesElement = successTemplate.cloneNode(true);
-    fragmentSuccess.appendChild(succesElement);
-    fragmentSuccess.classList.add(`succeded-form`);
-    mainBlock.insertAdjacentElement(`afterbegin`, fragmentSuccess);
-  };
-  const onSubmitSuccessClick = () => {
-    document.querySelector(`.succeded-form`).remove();
-    document.removeEventListener(`click`, onSubmitSuccessClick);
-  };
-  const onSubmitSuccessKeydown = () => {
-    document.querySelector(`.succeded-form`).remove();
-    document.removeEventListener(`keydown`, onSubmitSuccessKeydown);
-  };
-  const onSuccessSubmit = () => {
-    renderSuccesPost();
-    document.addEventListener(`click`, onSubmitSuccessClick);
-    document.addEventListener(`keydown`, (evt) => {
-      if (evt.keyCode === ESCAPE_BUTTON) {
-        onSubmitSuccessKeydown();
-      }
-    });
-    form.reset();
-    desactivatePage();
-    disableFieldSets();
-  };
-
-  const renderErrorPost = () => {
-    let fragmentError = document.createElement(`div`);
-    const errorElement = errorTemplate.cloneNode(true);
-    fragmentError.appendChild(errorElement);
-    fragmentError.classList.add(`error-form`);
-    mainBlock.insertAdjacentElement(`afterbegin`, fragmentError);
-  };
-  const onSubmitErrorClick = () => {
-    document.querySelector(`.error-form`).remove();
-    document.removeEventListener(`click`, onSubmitErrorClick);
-  };
-  const onSubmitErrorKeydown = () => {
-    document.querySelector(`.error-form`).remove();
-    document.removeEventListener(`keydown`, onSubmitErrorKeydown);
-  };
-  const onErrorSubmit = () => {
-    renderErrorPost();
-    document.addEventListener(`click`, onSubmitErrorClick);
-    document.addEventListener(`keydown`, (evt) => {
-      if (evt.keyCode === ESCAPE_BUTTON) {
-        onSubmitErrorKeydown();
-      }
-    });
-    const errorButtonMessage = document.querySelector(`.error__button`);
-    errorButtonMessage.addEventListener(`click`, onSubmitErrorClick);
-  };
-
   form.addEventListener(`submit`, (evt) => {
-
-    window.upload(
+    window.server.upload(
         new FormData(form),
         onSuccessSubmit,
         onErrorSubmit
