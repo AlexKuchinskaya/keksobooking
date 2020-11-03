@@ -70,13 +70,17 @@
     }
   };
 
+  const getServerAnswer = (response) => {
+    window.pin.renderPins(response);
+    window.renderPopupFragment(response);
+  };
+
   const onPinMainMousedown = () => {
     activateFieldsets();
     mapDialog.classList.remove(`map--faded`);
     form.classList.remove(`ad-form--disabled`);
     mapFilters.classList.remove(`map__filters--disabled`);
-    window.server.load(window.pin.renderPins, window.errorPinHandler);
-    window.server.load(window.renderPopupFragment, window.errorPinHandler);
+    window.server.load(getServerAnswer, window.pin.errorPinHandler);
   };
 
   const onRoomNumberChange = () => {
