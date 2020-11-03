@@ -2,6 +2,7 @@
 (function () {
   const MOUSE_LEFT_BUTTON = 0;
   const KEY_ENTER = 13;
+  const ESCAPE_BUTTON = 27;
   const MIN_TITLE_LENGTH = 30;
   const MAX_TITLE_LENGTH = 100;
   const CAPACITY_0 = 0;
@@ -16,7 +17,8 @@
   const pinMaininActiveCoordinateY = 375;
   const pinActiveHeight = 84;
   const pinActiveWidth = 33;
-  const elementsFieldset = document.querySelectorAll(`.ad-form__element`);
+  const INVALID_CAPACITY = `Недопустимое количество комнат`;
+  const VALIDATION_SUCCESS = ``;
   const form = document.querySelector(`.ad-form`);
   const addressInput = document.querySelector(`#address`);
   const mapDialog = document.querySelector(`.map`);
@@ -31,7 +33,12 @@
   const timeOut = form.querySelector(`#timeout`);
   const resetButton = document.querySelector(`.ad-form__reset`);
   const pinMainParent = document.querySelector(`.map__overlay`);
-
+  const successTask = document.querySelector(`#success`).content;
+  const successTemplate = successTask.querySelector(`.success`);
+  const errorTask = document.querySelector(`#error`).content;
+  const errorTemplate = errorTask.querySelector(`.error`);
+  const mainBlock = document.querySelector(`main`);
+  const fieldsetsForm = form.querySelectorAll(`fieldset`);
   const houseTypes = {
     'palace': {
       min: 10000,
@@ -51,20 +58,32 @@
     },
   };
 
-  const onPinMainMousedown = () => {
-    for (let elementFieldset of elementsFieldset) {
-      elementFieldset.disabled = false;
+  const activateFieldsets = () => {
+    for (let elementFieldsetsForm of fieldsetsForm) {
+      elementFieldsetsForm.disabled = false;
     }
+  };
+
+  const disableFieldSets = () => {
+    for (let elementFieldsetsForm of fieldsetsForm) {
+      elementFieldsetsForm.disabled = true;
+    }
+  };
+
+  const getServerAnswer = (response) => {
+    window.pin.renderPins(response);
+    window.renderPopupFragment(response);
+  };
+
+  const onPinMainMousedown = () => {
+    activateFieldsets();
     mapDialog.classList.remove(`map--faded`);
     form.classList.remove(`ad-form--disabled`);
     mapFilters.classList.remove(`map__filters--disabled`);
-    window.renderPins(window.hotels);
-    window.renderPopupFragment();
+    window.server.load(getServerAnswer, window.pin.errorPinHandler);
   };
 
-  const onroomNumberChange = () => {
-    const INVALID_CAPACITY = `Недопустимое количество комнат`;
-    const VALIDATION_SUCCESS = ``;
+  const onRoomNumberChange = () => {
     const capacity = parseInt(capacityInput.value, 10);
     const roomNumber = parseInt(roomNumberInput.value, 10);
     const message = roomNumber < capacity || (capacity === CAPACITY_0 && roomNumber < ROOM_NUMBER_100) ? INVALID_CAPACITY : VALIDATION_SUCCESS;
@@ -90,7 +109,7 @@
     timeOut.value = timeIn.value;
   };
 
-  const pageInactivemake = () => {
+  const desactivatePage = () => {
     mapDialog.classList.add(`map--faded`);
     form.classList.add(`ad-form--disabled`);
     mapFilters.classList.add(`map__filters--disabled`);
@@ -99,10 +118,70 @@
     document.querySelector(`.popup`).remove();
   };
 
-  pinMain.addEventListener(`mousedown`, function (evt) {
+  const renderSuccesPost = () => {
+    let fragmentSuccess = document.createElement(`div`);
+    const succesElement = successTemplate.cloneNode(true);
+    fragmentSuccess.appendChild(succesElement);
+    fragmentSuccess.classList.add(`succeded-form`);
+    mainBlock.insertAdjacentElement(`afterbegin`, fragmentSuccess);
+  };
+
+  const onSubmitSuccessClick = () => {
+    document.querySelector(`.succeded-form`).remove();
+    document.removeEventListener(`click`, onSubmitSuccessClick);
+  };
+
+  const onSubmitSuccessKeydown = () => {
+    document.querySelector(`.succeded-form`).remove();
+    document.removeEventListener(`keydown`, onSubmitSuccessKeydown);
+  };
+
+  const onSuccessSubmit = () => {
+    renderSuccesPost();
+    document.addEventListener(`click`, onSubmitSuccessClick);
+    document.addEventListener(`keydown`, (evt) => {
+      if (evt.keyCode === ESCAPE_BUTTON) {
+        onSubmitSuccessKeydown();
+      }
+    });
+    form.reset();
+    desactivatePage();
+    disableFieldSets();
+  };
+
+  const renderErrorPost = () => {
+    let fragmentError = document.createElement(`div`);
+    const errorElement = errorTemplate.cloneNode(true);
+    fragmentError.appendChild(errorElement);
+    fragmentError.classList.add(`error-form`);
+    mainBlock.insertAdjacentElement(`afterbegin`, fragmentError);
+  };
+
+  const onSubmitErrorClick = () => {
+    document.querySelector(`.error-form`).remove();
+    document.removeEventListener(`click`, onSubmitErrorClick);
+  };
+
+  const onSubmitErrorKeydown = () => {
+    document.querySelector(`.error-form`).remove();
+    document.removeEventListener(`keydown`, onSubmitErrorKeydown);
+  };
+
+  const onErrorSubmit = () => {
+    renderErrorPost();
+    document.addEventListener(`click`, onSubmitErrorClick);
+    document.addEventListener(`keydown`, (evt) => {
+      if (evt.keyCode === ESCAPE_BUTTON) {
+        onSubmitErrorKeydown();
+      }
+    });
+    const errorButtonMessage = document.querySelector(`.error__button`);
+    errorButtonMessage.addEventListener(`click`, onSubmitErrorClick);
+  };
+
+  pinMain.addEventListener(`mousedown`, (evt) => {
     if (evt.button === MOUSE_LEFT_BUTTON) {
       onPinMainMousedown();
-      // 5.2 Личный проект: модуляция (часть 2)
       evt.preventDefault();
 
       let startCoords = {
@@ -142,12 +221,14 @@
           }
           return leftPosition;
         };
-        pinMain.style.top = `${limitY(pinMain.offsetTop - shift.y)}px`;
-        pinMain.style.left = `${limitX((pinMain.offsetLeft - shift.x), pinMainParent)}px`;
-        addressInput.value = `${limitY(pinMain.offsetTop - shift.y) + pinActiveWidth}, ${limitX((pinMain.offsetLeft - shift.x), pinMainParent) + pinActiveHeight}`;
+        const top = limitY(pinMain.offsetTop - shift.y);
+        const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
+        pinMain.style.top = `${top}px`;
+        pinMain.style.left = `${left}px`;
+        addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
       };
 
-      let onMouseUp = (upEvt) => {
+      const onMouseUp = (upEvt) => {
         upEvt.preventDefault();
         onMouseMove(upEvt);
         document.removeEventListener(`mousemove`, onMouseMove);
@@ -160,7 +241,7 @@
     }
   });
 
-  pinMain.addEventListener(`keydown`, function (evt) {
+  pinMain.addEventListener(`keydown`, (evt) => {
     if (evt.keyCode === KEY_ENTER) {
       onPinMainMousedown();
     }
@@ -180,11 +261,11 @@
   });
 
   roomNumberInput.addEventListener(`change`, () => {
-    onroomNumberChange();
+    onRoomNumberChange();
   });
 
   capacityInput.addEventListener(`change`, () => {
-    onroomNumberChange();
+    onRoomNumberChange();
   });
 
   typeField.addEventListener(`change`, () => {
@@ -202,12 +283,19 @@
   resetButton.addEventListener(`click`, (evt) => {
     evt.preventDefault();
     form.reset();
-    pageInactivemake();
+    desactivatePage();
   });
 
-  for (let elementFieldset of elementsFieldset) {
-    elementFieldset.disabled = true;
-  }
+  form.addEventListener(`submit`, (evt) => {
+    window.server.upload(
+        new FormData(form),
+        onSuccessSubmit,
+        onErrorSubmit
+    );
+    evt.preventDefault();
+  });
+
+  disableFieldSets();
 
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
 })();

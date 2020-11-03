@@ -1246,3 +1246,19 @@ fieldset {
 .hidden {
   display: none;
 }
+
+.wrong-input {
+  border-color: #8B0000;
+}
+.map__error-server {
+  position: absolute;
+  font-size: 25px;
+  text-align: center;
+  z-index: 100;
+  left: 50%;
+  top: 22%;
+  transform: translate(-50%, -50%);
+  background-color: #490aaf;
+  color: #35ffd1;
+
+}
