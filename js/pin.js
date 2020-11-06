@@ -2,7 +2,7 @@
 (function () {
   const PIN_OFFSET_Y = 84;
   const PIN_OFFSET_X = 31;
-  const MAX_PIN_COUNT = 8;
+  const MAX_PIN_COUNT = 5;
   let pinsData = [];
   const announcementPins = document.querySelector(`.map__pins`);
   const advertTask = document.querySelector(`#pin`).content;

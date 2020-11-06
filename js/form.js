@@ -69,7 +69,7 @@
       elementFieldsetsForm.disabled = true;
     }
   };
-
+  // jjj
   const getServerAnswer = (response) => {
     window.pin.renderPins(response);
     window.renderPopupFragment(response);
@@ -182,6 +182,24 @@
   pinMain.addEventListener(`mousedown`, (evt) => {
     if (evt.button === MOUSE_LEFT_BUTTON) {
       onPinMainMousedown();
+       // 4.2
+      const mapPins = document.querySelectorAll(`.map__pin`);
+      let mapPinsArray = Array.from(mapPins);
+      // const main = document.querySelector(`.map__pin--main`);
+      let newPinsArray = mapPinsArray.slice(1);
+      for (let i = 0; i < newPinsArray.length; i++) {
+        const mapElement = newPinsArray[i];
+        mapElement.addEventListener(`click`, () => {
+          const mapPinActive = document.querySelector(`.map__pin--active`);
+          if (mapPinActive) {
+            mapPinActive.classList.remove(`map__pin--active`);
+          }
+          if (mapElement.classList.contains(`map__pin--active`) === false) {
+            mapElement.classList.add(`map__pin--active`);
+          }
+          // window.load(window.pin.renderPopupFragment, window.pin.errorPinHandler);
+        });
+      }
       evt.preventDefault();
 
       let startCoords = {
@@ -298,4 +316,42 @@
   disableFieldSets();
 
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
+  // 7.1
+  let typeHousing = `any`;
+  let pins = [];
+  const typeHouseFilter = mapFilters.querySelector(`#housing-type`);
+  const housesOptions = typeHouseFilter.querySelectorAll(`option`);
+  const updatePins = function () {
+    const sameTypeHousing = pins.filter(function (pin) {
+      return pin.offer.type === typeHousing;
+    });
+    window.pin.renderPins(sameTypeHousing);
+  };
+  typeHouseFilter.addEventListener(`change`, function () {
+    window.server.load(function (data) {
+      pins = data;
+      for (let housesOption of housesOptions) {
+        const optionHouse = housesOption.value;
+        // let typeHousing;
+        // this.value = typeHousing;
+        typeHousing = optionHouse;
+        updatePins();
+      }
+    },
+    window.pin.errorPinHandler);
+  });
+  // typeHouseFilter.addEventListener(`change`, function () {
+  //   for (let housesOption of housesOptions) {
+  //     let optionHouse = housesOption.value;
+  //     // let typeHousing;
+  //     // this.value = typeHousing;
+  //     typeHousing = optionHouse;
+  //     updatePins();
+  //   }
+  // });
+  // const successHandler = function (data) {
+  //   pins = data;
+  //   updatePins();
+  // };
+  // window.server.load(successHandler, window.pin.errorPinHandler);
 })();
