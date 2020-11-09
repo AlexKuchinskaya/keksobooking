@@ -56,8 +56,10 @@
   };
 
   const renderPopupFragment = (card) => {
-    mapFiltersContainer.before(renderPopup(card[0]));
+    mapFiltersContainer.before(renderPopup(card));
   };
-
-  window.renderPopupFragment = renderPopupFragment;
+  const closePopup = () => {
+    document.querySelector(`.popup`).remove();
+  };
+  window.card = {renderPopupFragment, closePopup};
 })();

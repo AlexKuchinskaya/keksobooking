@@ -69,11 +69,25 @@
       elementFieldsetsForm.disabled = true;
     }
   };
-  // jjj
+  let pinsData = [];
+  // Отрисовка меток и карточек
   const getServerAnswer = (response) => {
-    window.pin.renderPins(response);
-    window.renderPopupFragment(response);
+    pinsData = response;
+    //мы не переопределяем массив который теперь состоит из pin.id?
+    pinsData = response.map((pin, index) => {
+      pin.id = `${index}`;
+      return pin;
+    });
+    window.pin.renderPins(response);// сюда не надо передавать pinsData?
   };
+
+  const getPinsData = () => {
+    return pinsData;
+  };
+  window.form = {
+    getPinsData
+  };
+  console.log(window.form.getPinsData());
 
   const onPinMainMousedown = () => {
     activateFieldsets();
@@ -182,24 +196,6 @@
   pinMain.addEventListener(`mousedown`, (evt) => {
     if (evt.button === MOUSE_LEFT_BUTTON) {
       onPinMainMousedown();
-       // 4.2
-      const mapPins = document.querySelectorAll(`.map__pin`);
-      let mapPinsArray = Array.from(mapPins);
-      // const main = document.querySelector(`.map__pin--main`);
-      let newPinsArray = mapPinsArray.slice(1);
-      for (let i = 0; i < newPinsArray.length; i++) {
-        const mapElement = newPinsArray[i];
-        mapElement.addEventListener(`click`, () => {
-          const mapPinActive = document.querySelector(`.map__pin--active`);
-          if (mapPinActive) {
-            mapPinActive.classList.remove(`map__pin--active`);
-          }
-          if (mapElement.classList.contains(`map__pin--active`) === false) {
-            mapElement.classList.add(`map__pin--active`);
-          }
-          // window.load(window.pin.renderPopupFragment, window.pin.errorPinHandler);
-        });
-      }
       evt.preventDefault();
 
       let startCoords = {
@@ -316,30 +312,30 @@
   disableFieldSets();
 
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
-  // 7.1
-  let typeHousing = `any`;
-  let pins = [];
-  const typeHouseFilter = mapFilters.querySelector(`#housing-type`);
-  const housesOptions = typeHouseFilter.querySelectorAll(`option`);
-  const updatePins = function () {
-    const sameTypeHousing = pins.filter(function (pin) {
-      return pin.offer.type === typeHousing;
-    });
-    window.pin.renderPins(sameTypeHousing);
-  };
-  typeHouseFilter.addEventListener(`change`, function () {
-    window.server.load(function (data) {
-      pins = data;
-      for (let housesOption of housesOptions) {
-        const optionHouse = housesOption.value;
-        // let typeHousing;
-        // this.value = typeHousing;
-        typeHousing = optionHouse;
-        updatePins();
-      }
-    },
-    window.pin.errorPinHandler);
-  });
+  // // 7.1
+  // let typeHousing = `any`;
+  // let pins = [];
+  // const typeHouseFilter = mapFilters.querySelector(`#housing-type`);
+  // const housesOptions = typeHouseFilter.querySelectorAll(`option`);
+  // const updatePins = function () {
+  //   const sameTypeHousing = pins.filter(function (pin) {
+  //     return pin.offer.type === typeHousing;
+  //   });
+  //   window.pin.renderPins(sameTypeHousing);
+  // };
+  // typeHouseFilter.addEventListener(`change`, function () {
+  //   window.server.load(function (data) {
+  //     pins = data;
+  //     for (let housesOption of housesOptions) {
+  //       const optionHouse = housesOption.value;
+  //       // let typeHousing;
+  //       // this.value = typeHousing;
+  //       typeHousing = optionHouse;
+  //       updatePins();
+  //     }
+  //   },
+  //   window.pin.errorPinHandler);
+  // });
   // typeHouseFilter.addEventListener(`change`, function () {
   //   for (let housesOption of housesOptions) {
   //     let optionHouse = housesOption.value;
