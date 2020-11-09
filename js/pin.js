@@ -10,7 +10,6 @@
   const advertTask = document.querySelector(`#pin`).content;
   const advertTemplate = advertTask.querySelector(`.map__pin`);
   const map = document.querySelector(`.map`);
-  const mapPinActive = document.querySelector(`.map__pin--active`);
 
   const renderPin = (pin) => {
     const coordinateLeft = pin.location.x + PIN_OFFSET_X;
@@ -37,6 +36,7 @@
         const pinData = window.form.getPinsData().find((pin) => {
           return pin.id === pinElement.id;
         });
+        const mapPinActive = document.querySelector(`.map__pin--active`);
         if (mapPinActive) {
           mapPinActive.classList.remove(`map__pin--active`);
         }
@@ -60,6 +60,7 @@
           const pinData = window.form.getPinsData().find((pin) => {
             return pin.id === pinElement.id;
           });
+          const mapPinActive = document.querySelector(`.map__pin--active`);
           if (mapPinActive) {
             mapPinActive.classList.remove(`map__pin--active`);
           }
