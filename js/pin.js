@@ -3,9 +3,7 @@
   const PIN_OFFSET_Y = 84;
   const PIN_OFFSET_X = 31;
   const MAX_PIN_COUNT = 5;
-  const ESCAPE_BUTTON = 27;
   const KEY_ENTER = 13;
-  let pinsData = [];
   const announcementPins = document.querySelector(`.map__pins`);
   const advertTask = document.querySelector(`#pin`).content;
   const advertTemplate = advertTask.querySelector(`.map__pin`);
@@ -24,59 +22,35 @@
     return pinElement;
   };
 
-  const renderPins = (pins) => {
-    pinsData = pins;
+  const getPinDomIdandActive = (evt) => {
+    const pinElement = evt.target.closest(`.map__pin`);
+    const pinData = window.form.getPinsData().find((pin) => {
+      return pin.id === pinElement.id;
+    });
+    const mapPinActive = document.querySelector(`.map__pin--active`);
+    if (mapPinActive) {
+      mapPinActive.classList.remove(`map__pin--active`);
+    }
+    if (!pinElement.classList.contains(`map__pin--active`)) {
+      pinElement.classList.add(`map__pin--active`);
+    }
+    window.card.renderPopupFragment(pinData);
+  };
+
+  const renderPins = (pinsData) => {
     const fragment = document.createElement(`div`);
     fragment.classList.add(`pins`);
     const iterations = pinsData.length < MAX_PIN_COUNT ? pinsData.length : MAX_PIN_COUNT;
     for (let i = 0; i < iterations; i++) {
       let pinDom = renderPin(pinsData[i]);
       pinDom.addEventListener(`click`, (evt) => {
-        const pinElement = evt.target.closest(`.map__pin`);
-        const pinData = window.form.getPinsData().find((pin) => {
-          return pin.id === pinElement.id;
-        });
-        const mapPinActive = document.querySelector(`.map__pin--active`);
-        if (mapPinActive) {
-          mapPinActive.classList.remove(`map__pin--active`);
-        }
-        if (!pinElement.classList.contains(`map__pin--active`)) {
-          pinElement.classList.add(`map__pin--active`);
-        }
-        window.card.renderPopupFragment(pinData);
-        const popupClose = document.querySelector(`.popup__close`);
-        popupClose.addEventListener(`click`, () => {
-          window.card.closePopup();
-        });
-        document.addEventListener(`keydown`, (evt) => {
-          if (evt.keyCode === ESCAPE_BUTTON) {
-            window.card.closePopup();
-          }
-        });
+        window.card.closeAllPopups();
+        getPinDomIdandActive(evt);
       });
       pinDom.addEventListener(`keydown`, (evt) => {
         if (evt.keyCode === KEY_ENTER) {
-          const pinElement = evt.target.closest(`.map__pin`);
-          const pinData = window.form.getPinsData().find((pin) => {
-            return pin.id === pinElement.id;
-          });
-          const mapPinActive = document.querySelector(`.map__pin--active`);
-          if (mapPinActive) {
-            mapPinActive.classList.remove(`map__pin--active`);
-          }
-          if (!pinElement.classList.contains(`map__pin--active`)) {
-            pinElement.classList.add(`map__pin--active`);
-          }
-          window.card.renderPopupFragment(pinData);
-          const popupClose = document.querySelector(`.popup__close`);
-          popupClose.addEventListener(`click`, () => {
-            window.card.closePopup();
-          });
-          document.addEventListener(`keydown`, (evt) => {
-            if (evt.keyCode === ESCAPE_BUTTON) {
-              window.card.closePopup();
-            }
-          });
+          window.card.closeAllPopups();
+          getPinDomIdandActive(evt);
         }
       });
       fragment.appendChild(pinDom);

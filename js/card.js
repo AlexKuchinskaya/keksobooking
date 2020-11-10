@@ -1,5 +1,6 @@
 'use strict';
 (function () {
+  const ESCAPE_BUTTON = 27;
   const photoHeight = `45`;
   const photoWidth = `40`;
   const cardTask = document.querySelector(`#card`).content;
@@ -20,6 +21,15 @@
     popupElement.querySelector(`.popup__type`).textContent = appartmentTypeTranslation[information.offer.type];
     popupElement.querySelector(`.popup__text--capacity`).textContent = `${information.offer.rooms} комнаты для ${information.offer.guests} гостей`;
     popupElement.querySelector(`.popup__text--time`).textContent = `Заезд после ${information.offer.checkin}, выезд до ${information.offer.checkout}`;
+
+    popupElement.querySelector(`.popup__close`).addEventListener(`click`, () => {
+      popupElement.remove();
+    });
+    document.addEventListener(`keydown`, (evt) => {
+      if (evt.keyCode === ESCAPE_BUTTON) {
+        popupElement.remove();
+      }
+    });
 
     const featureElements = popupElement.querySelectorAll(`.popup__feature`);
     for (let i = 0; i < featureElements.length; i++) {
@@ -58,8 +68,11 @@
   const renderPopupFragment = (card) => {
     mapFiltersContainer.before(renderPopup(card));
   };
-  const closePopup = () => {
-    document.querySelector(`.popup`).remove();
+
+  const closeAllPopups = () => {
+    document.querySelectorAll(`.popup`).forEach((popupElement) => {
+      popupElement.remove();
+    });
   };
-  window.card = {renderPopupFragment, closePopup};
+  window.card = {renderPopupFragment, closeAllPopups};
 })();

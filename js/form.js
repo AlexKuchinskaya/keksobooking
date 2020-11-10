@@ -70,15 +70,13 @@
     }
   };
   let pinsData = [];
-  // Отрисовка меток и карточек
   const getServerAnswer = (response) => {
     pinsData = response;
-    //мы не переопределяем массив который теперь состоит из pin.id?
     pinsData = response.map((pin, index) => {
       pin.id = `${index}`;
       return pin;
     });
-    window.pin.renderPins(response);// сюда не надо передавать pinsData?
+    window.pin.renderPins(pinsData);
   };
 
   const getPinsData = () => {
@@ -87,7 +85,6 @@
   window.form = {
     getPinsData
   };
-  console.log(window.form.getPinsData());
 
   const onPinMainMousedown = () => {
     activateFieldsets();
@@ -312,42 +309,4 @@
   disableFieldSets();
 
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
-  // // 7.1
-  // let typeHousing = `any`;
-  // let pins = [];
-  // const typeHouseFilter = mapFilters.querySelector(`#housing-type`);
-  // const housesOptions = typeHouseFilter.querySelectorAll(`option`);
-  // const updatePins = function () {
-  //   const sameTypeHousing = pins.filter(function (pin) {
-  //     return pin.offer.type === typeHousing;
-  //   });
-  //   window.pin.renderPins(sameTypeHousing);
-  // };
-  // typeHouseFilter.addEventListener(`change`, function () {
-  //   window.server.load(function (data) {
-  //     pins = data;
-  //     for (let housesOption of housesOptions) {
-  //       const optionHouse = housesOption.value;
-  //       // let typeHousing;
-  //       // this.value = typeHousing;
-  //       typeHousing = optionHouse;
-  //       updatePins();
-  //     }
-  //   },
-  //   window.pin.errorPinHandler);
-  // });
-  // typeHouseFilter.addEventListener(`change`, function () {
-  //   for (let housesOption of housesOptions) {
-  //     let optionHouse = housesOption.value;
-  //     // let typeHousing;
-  //     // this.value = typeHousing;
-  //     typeHousing = optionHouse;
-  //     updatePins();
-  //   }
-  // });
-  // const successHandler = function (data) {
-  //   pins = data;
-  //   updatePins();
-  // };
-  // window.server.load(successHandler, window.pin.errorPinHandler);
 })();
