@@ -69,10 +69,21 @@
       elementFieldsetsForm.disabled = true;
     }
   };
-
+  let pinsData = [];
   const getServerAnswer = (response) => {
-    window.pin.renderPins(response);
-    window.renderPopupFragment(response);
+    pinsData = response;
+    pinsData = response.map((pin, index) => {
+      pin.id = `${index}`;
+      return pin;
+    });
+    window.pin.renderPins(pinsData);
+  };
+
+  const getPinsData = () => {
+    return pinsData;
+  };
+  window.form = {
+    getPinsData
   };
 
   const onPinMainMousedown = () => {
