@@ -128,7 +128,12 @@
           filteredPins.push(pin);
         }
       }
-      window.pin.renderPins(filteredPins);
+      // Не получается DEbounce
+      window.debounce(window.pin.renderPins(filteredPins));
+      // window.setTimeout(function () {
+      //   window.pin.renderPins(filteredPins);
+      // }, 500);
+      // window.pin.renderPins(filteredPins);
       window.card.closeAllPopups();
     });
   }
