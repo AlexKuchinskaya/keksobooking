@@ -78,6 +78,7 @@
       return pin;
     });
     window.pin.renderPins(pinsData);
+    mapFilters.classList.remove(`map__filters--disabled`);
   };
 
   const getPinsData = () => {
@@ -88,7 +89,6 @@
     activateFieldsets();
     mapDialog.classList.remove(`map--faded`);
     form.classList.remove(`ad-form--disabled`);
-    mapFilters.classList.remove(`map__filters--disabled`);
     window.server.load(getServerAnswer, window.pin.errorPinHandler);
   };
 

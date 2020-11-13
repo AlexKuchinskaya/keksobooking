@@ -25,14 +25,6 @@
   const housingFeaturesFilter = mapFilters.querySelector(`#housing-features`);
   const elementsFilterForm = mapFilters.children;
 
-  const checkMapPinsUndefined = () => {
-    if (window.form.getPinsData() === `undefined`) {
-      mapFilters.children.disabled = true;
-    }
-  };
-
-  checkMapPinsUndefined();
-
   const getCheckedCheckboxes = () => {
     const checkboxes = housingFeaturesFilter.querySelectorAll(`input`);
     let checkboxesChecked = [];
