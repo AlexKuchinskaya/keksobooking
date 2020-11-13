@@ -82,9 +82,6 @@
   const getPinsData = () => {
     return pinsData;
   };
-  window.form = {
-    getPinsData
-  };
 
   const onPinMainMousedown = () => {
     activateFieldsets();
@@ -120,6 +117,10 @@
     timeOut.value = timeIn.value;
   };
 
+  const onTimeOutChange = () => {
+    timeIn.value = timeOut.value;
+  };
+
   const desactivatePage = () => {
     mapDialog.classList.add(`map--faded`);
     form.classList.add(`ad-form--disabled`);
@@ -130,7 +131,7 @@
   };
 
   const renderSuccesPost = () => {
-    let fragmentSuccess = document.createElement(`div`);
+    const fragmentSuccess = document.createElement(`div`);
     const succesElement = successTemplate.cloneNode(true);
     fragmentSuccess.appendChild(succesElement);
     fragmentSuccess.classList.add(`succeded-form`);
@@ -161,7 +162,7 @@
   };
 
   const renderErrorPost = () => {
-    let fragmentError = document.createElement(`div`);
+    const fragmentError = document.createElement(`div`);
     const errorElement = errorTemplate.cloneNode(true);
     fragmentError.appendChild(errorElement);
     fragmentError.classList.add(`error-form`);
@@ -291,6 +292,10 @@
     onTimeInChange();
   });
 
+  timeOut.addEventListener(`change`, () => {
+    onTimeOutChange();
+  });
+
   resetButton.addEventListener(`click`, (evt) => {
     evt.preventDefault();
     form.reset();
@@ -298,15 +303,22 @@
   });
 
   form.addEventListener(`submit`, (evt) => {
-    window.server.upload(
-        new FormData(form),
-        onSuccessSubmit,
-        onErrorSubmit
-    );
+    onRoomNumberChange();
+    if (form.checkValidity()) {
+      window.server.upload(
+          new FormData(form),
+          onSuccessSubmit,
+          onErrorSubmit
+      );
+    }
     evt.preventDefault();
   });
 
   disableFieldSets();
 
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
+
+  window.form = {
+    getPinsData
+  };
 })();

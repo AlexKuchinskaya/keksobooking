@@ -77,7 +77,7 @@
     return getPriceCategoryFromNumber(pin.offer.price) === priceCategory ? pin : null;
   };
 
-  const getRoomСategory = (roomNumber) => {
+  const getRoomCategory = (roomNumber) => {
     if (roomNumber === ROOM_1) {
       return ROOM_1_STRING;
     }
@@ -92,7 +92,7 @@
     if (roomCategory === ANY_VALUE) {
       return pin;
     }
-    return getRoomСategory(pin.offer.rooms) === roomCategory ? pin : null;
+    return getRoomCategory(pin.offer.rooms) === roomCategory ? pin : null;
   };
 
   const getGuestCategory = (guestNumber) => {
@@ -117,7 +117,7 @@
     let filterElement = elementsFilterForm[i];
     filterElement.addEventListener(`change`, () => {
       const allPins = window.form.getPinsData();
-      const filters = [filterPinsByHousingType, filterPinsByHousingPrice, filterPinsByHousingRooms, filterPinsByHousingGuests, filterPinsByHousingFeatures];
+      const filters = [filterPinsByHousingType, filterPinsByHousingPrice, filterPinsByHousingRooms, filterPinsByHousingGuests, filterPinsByHousingFeatures]; // filterPinsByHousingFeatures
       const filteredPins = [];
       for (let pinIndex = 0; pinIndex < allPins.length && filteredPins.length < MAX_PINS; pinIndex++) {
         let pin = allPins[pinIndex];
@@ -128,7 +128,12 @@
           filteredPins.push(pin);
         }
       }
-      window.pin.renderPins(filteredPins);
+      // Не получается DEbounce
+      window.debounce(window.pin.renderPins(filteredPins));
+      // window.setTimeout(function () {
+      //   window.pin.renderPins(filteredPins);
+      // }, 500);
+      // window.pin.renderPins(filteredPins);
       window.card.closeAllPopups();
     });
   }

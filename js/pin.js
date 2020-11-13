@@ -1,7 +1,7 @@
 'use strict';
 (function () {
-  const PIN_OFFSET_Y = 84;
-  const PIN_OFFSET_X = 31;
+  const PIN_OFFSET_Y = 35;
+  const PIN_OFFSET_X = 25;
   const MAX_PIN_COUNT = 5;
   const KEY_ENTER = 13;
   const announcementPins = document.querySelector(`.map__pins`);
@@ -18,7 +18,6 @@
     pinElement.style = `left: ${coordinateLeft}px; top: ${coordinateTop}px;`;
     pinImage.src = pin.author.avatar;
     pinImage.alt = pin.offer.title;
-
     return pinElement;
   };
 
