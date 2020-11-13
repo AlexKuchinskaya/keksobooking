@@ -12,7 +12,6 @@
       lastTimeout = window.setTimeout(() => {
         cb(...parameters);
       }, DEBOUNCE_INTERVAL);
-      console.log(lastTimeout)
     };
   };
 })();

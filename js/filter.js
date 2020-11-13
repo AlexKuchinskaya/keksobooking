@@ -113,6 +113,8 @@
     return getGuestCategory(pin.offer.guests) === guestCategory ? pin : null;
   };
 
+  const debouncedRenderPings = window.debounce(window.pin.renderPins);
+
   for (let i = 0; i < elementsFilterForm.length; i++) {
     let filterElement = elementsFilterForm[i];
     filterElement.addEventListener(`change`, () => {
@@ -128,12 +130,7 @@
           filteredPins.push(pin);
         }
       }
-      // Не получается DEbounce
-      window.debounce(window.pin.renderPins(filteredPins));
-      // window.setTimeout(function () {
-      //   window.pin.renderPins(filteredPins);
-      // }, 500);
-      // window.pin.renderPins(filteredPins);
+      debouncedRenderPings(filteredPins);
       window.card.closeAllPopups();
     });
   }

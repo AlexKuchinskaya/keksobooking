@@ -24,30 +24,25 @@
     }
   };
 
+  const creatNewImage = (someContainer) => {
+    let newImg = new Image(40, 40);
+    newImg.src = ``;
+    someContainer.appendChild(newImg);
+    onAnyFileChooserChange(fileChooserHousingPhoto, FILE_TYPES, newImg);
+  };
+
   fileChooserAvatar.addEventListener(`change`, () => {
     onAnyFileChooserChange(fileChooserAvatar, FILE_TYPES, previewAvatar);
   });
+
   fileChooserHousingPhoto.addEventListener(`change`, () => {
     const oldImg = previewHousingPhotoContainer.querySelector(`img`);
-    if (oldImg) {
-      oldImg.remove(`img`);
+    if (!oldImg) {
+      creatNewImage(previewHousingPhotoContainer);
+    } else {
+      const newContainer = previewHousingPhotoContainer.cloneNode();
+      creatNewImage(newContainer);
+      document.querySelector(`.ad-form__photo-container`).appendChild(newContainer);
     }
-    // СОЗДАЮ НОВЫЙ ЭЛМЕНТ img. ЕСТЬ 2 СПОСОБО, ОБА РАБОТАЮТ, ГДЕ ВТОРОЙ КОРОЧЕ, НО НЕ ЗНАЮ ПОДОЙДЕТ ЛИ?
-
-    // 1-ЫЙ СПОСОБ
-
-    // let newImg = document.createElement(`img`);
-    // newImg.classList.add(`ad-form__choosen-picture`);
-    // newImg.src = ``;
-    // newImg.width = `40`;
-    // newImg.height = `40`;
-    // previewHousingPhotoContainer.appendChild(newImg);
-
-    // 2-ОЙ СПОСОБ
-    let newImg = new Image(40, 40);
-    newImg.src = ``;
-    previewHousingPhotoContainer.appendChild(newImg);
-
-    onAnyFileChooserChange(fileChooserHousingPhoto, FILE_TYPES, newImg);
   });
 })();

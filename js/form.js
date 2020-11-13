@@ -39,6 +39,7 @@
   const errorTemplate = errorTask.querySelector(`.error`);
   const mainBlock = document.querySelector(`main`);
   const fieldsetsForm = form.querySelectorAll(`fieldset`);
+
   const houseTypes = {
     'palace': {
       min: 10000,
@@ -121,7 +122,7 @@
     timeIn.value = timeOut.value;
   };
 
-  const desactivatePage = () => {
+  const desactivate = () => {
     mapDialog.classList.add(`map--faded`);
     form.classList.add(`ad-form--disabled`);
     mapFilters.classList.add(`map__filters--disabled`);
@@ -130,7 +131,7 @@
     document.querySelector(`.popup`).remove();
   };
 
-  const renderSuccesPost = () => {
+  const renderSuccessPost = () => {
     const fragmentSuccess = document.createElement(`div`);
     const succesElement = successTemplate.cloneNode(true);
     fragmentSuccess.appendChild(succesElement);
@@ -149,7 +150,7 @@
   };
 
   const onSuccessSubmit = () => {
-    renderSuccesPost();
+    renderSuccessPost();
     document.addEventListener(`click`, onSubmitSuccessClick);
     document.addEventListener(`keydown`, (evt) => {
       if (evt.keyCode === ESCAPE_BUTTON) {
@@ -157,7 +158,7 @@
       }
     });
     form.reset();
-    desactivatePage();
+    desactivate();
     disableFieldSets();
   };
 
@@ -192,9 +193,11 @@
   };
 
   pinMain.addEventListener(`mousedown`, (evt) => {
+    evt.preventDefault();
     if (evt.button === MOUSE_LEFT_BUTTON) {
-      onPinMainMousedown();
-      evt.preventDefault();
+      if (pinsData.length === 0) {
+        onPinMainMousedown();
+      }
 
       let startCoords = {
         x: evt.clientX,
@@ -299,10 +302,11 @@
   resetButton.addEventListener(`click`, (evt) => {
     evt.preventDefault();
     form.reset();
-    desactivatePage();
+    desactivate();
   });
 
   form.addEventListener(`submit`, (evt) => {
+    evt.preventDefault();
     onRoomNumberChange();
     if (form.checkValidity()) {
       window.server.upload(
@@ -311,7 +315,6 @@
           onErrorSubmit
       );
     }
-    evt.preventDefault();
   });
 
   disableFieldSets();
