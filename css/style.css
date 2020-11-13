@@ -305,7 +305,7 @@ fieldset {
  * Фильтры объявления
  */
 
-.map__filters-container {
+ .map__filters-container {
   width: 100%;
   background-color: rgba(3, 28, 45, 0.5);
 }
@@ -335,7 +335,9 @@ fieldset {
 .map--faded .map__filters {
   opacity: 0;
 }
-
+.map--faded .map__filters-container {
+  display: none;
+}
 .map__filter {
   height: 30px;
   margin-right: 10px;
