@@ -12,10 +12,8 @@ const onAnyFileChooserChange = (fileChooser, FILE_ARRAY, preview) => {
   const matches = FILE_ARRAY.some((type) => {
     return fileName.endsWith(type);
   });
-
   if (matches) {
     let reader = new FileReader();
-
     reader.addEventListener(`load`, () => {
       preview.src = reader.result;
     });
