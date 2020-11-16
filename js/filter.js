@@ -23,7 +23,7 @@ const housingRoomsFilter = mapFilters.querySelector(`#housing-rooms`);
 const housingGuestsFilter = mapFilters.querySelector(`#housing-guests`);
 const housingFeaturesFilter = mapFilters.querySelector(`#housing-features`);
 const elementsFilterForm = mapFilters.children;
-
+// Б24 не знаю, как избавиься от этой функции, но чтобы все работало
 const getCheckedCheckboxes = () => {
   const checkboxes = housingFeaturesFilter.querySelectorAll(`input`);
   let checkboxesChecked = [];
@@ -34,6 +34,16 @@ const getCheckedCheckboxes = () => {
   }
   return checkboxesChecked;
 };
+
+// const filterPinsByHousingFeatures = (pin) => {
+//   const checkboxes = housingFeaturesFilter.querySelectorAll(`input`);
+//   const featuresArray = Array.from(checkboxes);
+//   return featuresArray.every((feature) => {
+//     if (feature.checked) {
+//       return pin.offer.features === feature.value;
+//     }
+//   }) ? pin : null;
+// };
 
 const filterPinsByHousingFeatures = (pin) => {
   const featuresArray = getCheckedCheckboxes();

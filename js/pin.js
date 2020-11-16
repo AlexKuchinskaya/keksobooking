@@ -1,6 +1,6 @@
 'use strict';
-const PIN_OFFSET_Y = 84;
-const PIN_OFFSET_X = 31;
+const PIN_OFFSET_Y = 35;
+const PIN_OFFSET_X = 25;
 const MAX_PIN_COUNT = 5;
 const KEY_ENTER = 13;
 const announcementPins = document.querySelector(`.map__pins`);
@@ -36,6 +36,14 @@ const getPinDomIdandActive = (evt) => {
   window.card.renderPopupFragment(pinData);
 };
 
+// правильно ли будет так записать удаление события?
+const onPinDomClickAndKeydown = (evt, someElement) => {
+  window.card.closeAllPopups();
+  getPinDomIdandActive(evt);
+  someElement.removeEventListener(`click`, onPinDomClickAndKeydown);
+  someElement.removeEventListener(`keydown`, onPinDomClickAndKeydown);
+
+};
 const renderPins = (pinsData) => {
   const fragment = document.createElement(`div`);
   fragment.classList.add(`pins`);
@@ -43,13 +51,11 @@ const renderPins = (pinsData) => {
   for (let i = 0; i < iterations; i++) {
     let pinDom = renderPin(pinsData[i]);
     pinDom.addEventListener(`click`, (evt) => {
-      window.card.closeAllPopups();
-      getPinDomIdandActive(evt);
-    });
+      onPinDomClickAndKeydown(evt, pinDom);
+    }); // как передать параметром событие
     pinDom.addEventListener(`keydown`, (evt) => {
       if (evt.keyCode === KEY_ENTER) {
-        window.card.closeAllPopups();
-        getPinDomIdandActive(evt);
+        onPinDomClickAndKeydown(evt, pinDom);
       }
     });
     fragment.appendChild(pinDom);

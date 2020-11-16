@@ -38,6 +38,7 @@ const errorTask = document.querySelector(`#error`).content;
 const errorTemplate = errorTask.querySelector(`.error`);
 const mainBlock = document.querySelector(`main`);
 const fieldsetsForm = form.querySelectorAll(`fieldset`);
+const errorButtonMessage = document.querySelector(`.error__button`);
 
 const houseTypes = {
   'palace': {
@@ -69,6 +70,12 @@ const disableFieldSets = () => {
     elementFieldsetsForm.disabled = true;
   }
 };
+// Б1 блокирую ручное редактирование инпута с адресом
+const changeAddressInput = () => {
+  addressInput.readOnly = true;
+  addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
+};
+
 let pinsData = [];
 const getServerAnswer = (response) => {
   pinsData = response;
@@ -83,12 +90,17 @@ const getServerAnswer = (response) => {
 const getPinsData = () => {
   return pinsData;
 };
-
+// Б1: добавляю проверку то, что страница активна, чтобы при при отправке формы срабатывало нажатие на pinMain и чтобы не обращаться повтороно к серверу
 const onPinMainMousedown = () => {
   activateFieldsets();
   mapDialog.classList.remove(`map--faded`);
   form.classList.remove(`ad-form--disabled`);
-  window.server.load(getServerAnswer, window.pin.errorPinHandler);
+  if (pinsData.length === 0) {
+    window.server.load(getServerAnswer, window.pin.errorPinHandler);
+  } else {
+    mapFilters.classList.remove(`map__filters--disabled`);
+    window.pin.renderPins(pinsData);
+  }
 };
 
 const onRoomNumberChange = () => {
@@ -97,6 +109,8 @@ const onRoomNumberChange = () => {
   const message = roomNumber < capacity || (capacity === CAPACITY_0 && roomNumber < ROOM_NUMBER_100) ? INVALID_CAPACITY : VALIDATION_SUCCESS;
   roomNumberInput.setCustomValidity(message);
   roomNumberInput.reportValidity();
+  roomNumberInput.removeEventListener(`change`, onRoomNumberChange);
+  capacityInput.removeEventListener(`change`, onRoomNumberChange);
 };
 
 const onTypeFieldChange = () => {
@@ -105,20 +119,24 @@ const onTypeFieldChange = () => {
   const minCost = priceInput.value.length < priceInput.min ? `Минимальная стоимость должна составлять ${priceInput.min}` : ``;
   priceInput.setCustomValidity(minCost);
   priceInput.reportValidity();
+  typeField.removeEventListener(`change`, onTypeFieldChange);
 };
 
 const onPriceInputChange = () => {
   const maxCost = parseInt(priceInput.value, 10) > MAX_INPUT_PRICE ? `Максимальная стоимость должна составлять ${MAX_INPUT_PRICE}` : ``;
   priceInput.setCustomValidity(maxCost);
   priceInput.reportValidity();
+  priceInput.removeEventListener(`input`, onPriceInputChange);
 };
 
 const onTimeInChange = () => {
   timeOut.value = timeIn.value;
+  timeIn.removeEventListener(`change`, onTimeInChange);
 };
 
 const onTimeOutChange = () => {
   timeIn.value = timeOut.value;
+  timeOut.removeEventListener(`change`, onTimeOutChange);
 };
 
 const desactivate = () => {
@@ -127,7 +145,10 @@ const desactivate = () => {
   mapFilters.classList.add(`map__filters--disabled`);
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
   document.querySelector(`.pins`).remove();
-  document.querySelector(`.popup`).remove();
+  // document.querySelector(`.popup`).remove(); записать через if
+  if (document.querySelector(`.popup`)) {
+    document.querySelector(`.popup`).remove();
+  }
 };
 
 const renderSuccessPost = () => {
@@ -138,22 +159,19 @@ const renderSuccessPost = () => {
   mainBlock.insertAdjacentElement(`afterbegin`, fragmentSuccess);
 };
 
-const onSubmitSuccessClick = () => {
+// Б2: вроде ошибка была из-за этого + Д14 дублирование кода
+const removeSubmitSuccessLayer = () => {
   document.querySelector(`.succeded-form`).remove();
-  document.removeEventListener(`click`, onSubmitSuccessClick);
-};
-
-const onSubmitSuccessKeydown = () => {
-  document.querySelector(`.succeded-form`).remove();
-  document.removeEventListener(`keydown`, onSubmitSuccessKeydown);
+  document.removeEventListener(`click`, removeSubmitSuccessLayer);
+  document.removeEventListener(`keydown`, removeSubmitSuccessLayer);
 };
 
 const onSuccessSubmit = () => {
   renderSuccessPost();
-  document.addEventListener(`click`, onSubmitSuccessClick);
+  document.addEventListener(`click`, removeSubmitSuccessLayer);
   document.addEventListener(`keydown`, (evt) => {
     if (evt.keyCode === ESCAPE_BUTTON) {
-      onSubmitSuccessKeydown();
+      removeSubmitSuccessLayer();
     }
   });
   form.reset();
@@ -169,89 +187,116 @@ const renderErrorPost = () => {
   mainBlock.insertAdjacentElement(`afterbegin`, fragmentError);
 };
 
-const onSubmitErrorClick = () => {
+const removeSubmitErrorLayer = () => {
   document.querySelector(`.error-form`).remove();
-  document.removeEventListener(`click`, onSubmitErrorClick);
+  document.removeEventListener(`click`, removeSubmitSuccessLayer);
+  document.removeEventListener(`keydown`, removeSubmitSuccessLayer);
+  errorButtonMessage.removeEventListener(`keydown`, removeSubmitSuccessLayer);
 };
-
-const onSubmitErrorKeydown = () => {
-  document.querySelector(`.error-form`).remove();
-  document.removeEventListener(`keydown`, onSubmitErrorKeydown);
-};
-
+// Д14 дублирование кода
 const onErrorSubmit = () => {
   renderErrorPost();
-  document.addEventListener(`click`, onSubmitErrorClick);
+  document.addEventListener(`click`, removeSubmitErrorLayer);
   document.addEventListener(`keydown`, (evt) => {
     if (evt.keyCode === ESCAPE_BUTTON) {
-      onSubmitErrorKeydown();
+      removeSubmitErrorLayer();
     }
   });
-  const errorButtonMessage = document.querySelector(`.error__button`);
-  errorButtonMessage.addEventListener(`click`, onSubmitErrorClick);
+  errorButtonMessage.addEventListener(`click`, removeSubmitErrorLayer);
+};
+
+const limitY = (topPosition) => {
+  if (topPosition < MIN_Y) {
+    return MIN_Y;
+  }
+  if (topPosition > MAX_Y) {
+    return MAX_Y;
+  }
+  return topPosition;
+};
+
+const limitX = (leftPosition, parentElement) => {
+  if (leftPosition > (parentElement.offsetWidth - MAX_X_RIGHT)) {
+    return (parentElement.offsetWidth - MAX_X_RIGHT);
+  }
+  if (leftPosition < MIN_X) {
+    return MAX_X_LEFT;
+  }
+  return leftPosition;
+};
+
+const onMouseMove = (moveEvt, someStartCoords) => {
+  moveEvt.preventDefault();
+
+  let shift = {
+    x: someStartCoords.x - moveEvt.clientX,
+    y: someStartCoords.y - moveEvt.clientY
+  };
+
+  someStartCoords = {
+    x: moveEvt.clientX,
+    y: moveEvt.clientY
+  };
+
+  const top = limitY(pinMain.offsetTop - shift.y);
+  const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
+  pinMain.style.top = `${top}px`;
+  pinMain.style.left = `${left}px`;
+  addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
+};
+
+const onMouseUp = (upEvt, someStartCoords) => {
+  upEvt.preventDefault();
+  onMouseMove(upEvt, someStartCoords);
+  document.removeEventListener(`mousemove`, onMouseMove);
+  document.removeEventListener(`mouseup`, onMouseUp);
+
 };
 
 pinMain.addEventListener(`mousedown`, (evt) => {
   evt.preventDefault();
   if (evt.button === MOUSE_LEFT_BUTTON) {
-    if (pinsData.length === 0) {
-      onPinMainMousedown();
-    }
+    // Б1: вызываю просто onPinMainMousedown() вместо if (pinsData.length === 0) { onPinMainMousedown()}
+    onPinMainMousedown();
+    // let startCoords = {
+    //   x: evt.clientX,
+    //   y: evt.clientY
+    // };
 
-    let startCoords = {
-      x: evt.clientX,
-      y: evt.clientY
-    };
+    // const onMouseMove = (moveEvt) => {
+    //   moveEvt.preventDefault();
 
-    const onMouseMove = (moveEvt) => {
-      moveEvt.preventDefault();
+    //   let shift = {
+    //     x: startCoords.x - moveEvt.clientX,
+    //     y: startCoords.y - moveEvt.clientY
+    //   };
 
-      let shift = {
-        x: startCoords.x - moveEvt.clientX,
-        y: startCoords.y - moveEvt.clientY
-      };
+    //   startCoords = {
+    //     x: moveEvt.clientX,
+    //     y: moveEvt.clientY
+    //   };
 
-      startCoords = {
-        x: moveEvt.clientX,
-        y: moveEvt.clientY
-      };
+    //   const top = limitY(pinMain.offsetTop - shift.y);
+    //   const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
+    //   pinMain.style.top = `${top}px`;
+    //   pinMain.style.left = `${left}px`;
+    //   addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
+    // };
 
-      const limitY = (topPosition) => {
-        if (topPosition < MIN_Y) {
-          return MIN_Y;
-        }
-        if (topPosition > MAX_Y) {
-          return MAX_Y;
-        }
-        return topPosition;
-      };
+    // const onMouseUp = (upEvt) => {
+    //   upEvt.preventDefault();
+    //   onMouseMove(upEvt);
+    //   document.removeEventListener(`mousemove`, onMouseMove);
+    //   document.removeEventListener(`mouseup`, onMouseUp);
 
-      const limitX = (leftPosition, parentElement) => {
-        if (leftPosition > (parentElement.offsetWidth - MAX_X_RIGHT)) {
-          return (parentElement.offsetWidth - MAX_X_RIGHT);
-        }
-        if (leftPosition < MIN_X) {
-          return MAX_X_LEFT;
-        }
-        return leftPosition;
-      };
-      const top = limitY(pinMain.offsetTop - shift.y);
-      const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
-      pinMain.style.top = `${top}px`;
-      pinMain.style.left = `${left}px`;
-      addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
-    };
+    // };
 
-    const onMouseUp = (upEvt) => {
-      upEvt.preventDefault();
-      onMouseMove(upEvt);
-      document.removeEventListener(`mousemove`, onMouseMove);
-      document.removeEventListener(`mouseup`, onMouseUp);
-
-    };
-
-    document.addEventListener(`mousemove`, onMouseMove);
-    document.addEventListener(`mouseup`, onMouseUp);
+    document.addEventListener(`mousemove`, (moveEvt) => {
+      onMouseMove(moveEvt, startCoords);
+    });
+    document.addEventListener(`mouseup`, (upEvt) => {
+      onMouseUp(upEvt, startCoords);
+    });
   }
 });
 
@@ -273,37 +318,39 @@ titleInput.addEventListener(`input`, () => {
   }
   titleInput.reportValidity();
 });
-
+// добавлен removeaddeventlistener
 roomNumberInput.addEventListener(`change`, () => {
   onRoomNumberChange();
 });
-
+// добавлен removeaddeventlistener
 capacityInput.addEventListener(`change`, () => {
   onRoomNumberChange();
 });
-
+// добавлен removeaddeventlistener
 typeField.addEventListener(`change`, () => {
   onTypeFieldChange();
 });
-
+// добавлен removeaddeventlistener
 priceInput.addEventListener(`input`, () => {
   onPriceInputChange();
 });
 
+// добавлен removeaddeventlistener
 timeIn.addEventListener(`change`, () => {
   onTimeInChange();
 });
 
+// добавлен removeaddeventlistener
 timeOut.addEventListener(`change`, () => {
   onTimeOutChange();
 });
-
+// здесь мне вынести эти  функции в одну и для нее записать removeListener?
 resetButton.addEventListener(`click`, (evt) => {
   evt.preventDefault();
   form.reset();
   desactivate();
 });
-
+// здесь мне вынести эти  функции в одну и для нее записать removeListener?
 form.addEventListener(`submit`, (evt) => {
   evt.preventDefault();
   onRoomNumberChange();
@@ -317,8 +364,8 @@ form.addEventListener(`submit`, (evt) => {
 });
 
 disableFieldSets();
-
-addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
+// Б1
+changeAddressInput();
 
 window.form = {
   getPinsData

@@ -12,6 +12,14 @@ const appartmentTypeTranslation = {
   palace: `Дворец`
 };
 
+//  Правильно ли записано и передано удаление события? Особенно где keydown
+const onPopupElementClick = (someElement) => {
+  someElement.remove();
+  someElement.removeEventListener(`click`, onPopupElementClick);
+  document.removeEventListener(`keydown`, onPopupElementClick);
+};
+// Д25 Как разбить на несколько, если здесь изаписывается данные в шаблон и добавляются обработчики, просто много данных надо записать
+// не знаю, что отсюда вынести
 const renderPopup = (information) => {
   const popupElement = cardTemplate.cloneNode(true);
   popupElement.querySelector(`.popup__title`).textContent = information.offer.title;
@@ -22,11 +30,11 @@ const renderPopup = (information) => {
   popupElement.querySelector(`.popup__text--time`).textContent = `Заезд после ${information.offer.checkin}, выезд до ${information.offer.checkout}`;
 
   popupElement.querySelector(`.popup__close`).addEventListener(`click`, () => {
-    popupElement.remove();
+    onPopupElementClick(popupElement);
   });
   document.addEventListener(`keydown`, (evt) => {
     if (evt.keyCode === ESCAPE_BUTTON) {
-      popupElement.remove();
+      onPopupElementClick(popupElement);
     }
   });
 
