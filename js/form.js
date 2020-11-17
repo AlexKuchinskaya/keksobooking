@@ -59,6 +59,11 @@ const houseTypes = {
   },
 };
 
+const startCoords = {
+  x: 0,
+  y: 0,
+};
+
 const activateFieldsets = () => {
   for (let elementFieldsetsForm of fieldsetsForm) {
     elementFieldsetsForm.disabled = false;
@@ -70,7 +75,7 @@ const disableFieldSets = () => {
     elementFieldsetsForm.disabled = true;
   }
 };
-// Б1 блокирую ручное редактирование инпута с адресом
+
 const changeAddressInput = () => {
   addressInput.readOnly = true;
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
@@ -90,7 +95,7 @@ const getServerAnswer = (response) => {
 const getPinsData = () => {
   return pinsData;
 };
-// Б1: добавляю проверку то, что страница активна, чтобы при при отправке формы срабатывало нажатие на pinMain и чтобы не обращаться повтороно к серверу
+
 const onPinMainMousedown = () => {
   activateFieldsets();
   mapDialog.classList.remove(`map--faded`);
@@ -109,8 +114,6 @@ const onRoomNumberChange = () => {
   const message = roomNumber < capacity || (capacity === CAPACITY_0 && roomNumber < ROOM_NUMBER_100) ? INVALID_CAPACITY : VALIDATION_SUCCESS;
   roomNumberInput.setCustomValidity(message);
   roomNumberInput.reportValidity();
-  roomNumberInput.removeEventListener(`change`, onRoomNumberChange);
-  capacityInput.removeEventListener(`change`, onRoomNumberChange);
 };
 
 const onTypeFieldChange = () => {
@@ -119,24 +122,20 @@ const onTypeFieldChange = () => {
   const minCost = priceInput.value.length < priceInput.min ? `Минимальная стоимость должна составлять ${priceInput.min}` : ``;
   priceInput.setCustomValidity(minCost);
   priceInput.reportValidity();
-  typeField.removeEventListener(`change`, onTypeFieldChange);
 };
 
 const onPriceInputChange = () => {
   const maxCost = parseInt(priceInput.value, 10) > MAX_INPUT_PRICE ? `Максимальная стоимость должна составлять ${MAX_INPUT_PRICE}` : ``;
   priceInput.setCustomValidity(maxCost);
   priceInput.reportValidity();
-  priceInput.removeEventListener(`input`, onPriceInputChange);
 };
 
 const onTimeInChange = () => {
   timeOut.value = timeIn.value;
-  timeIn.removeEventListener(`change`, onTimeInChange);
 };
 
 const onTimeOutChange = () => {
   timeIn.value = timeOut.value;
-  timeOut.removeEventListener(`change`, onTimeOutChange);
 };
 
 const desactivate = () => {
@@ -145,9 +144,9 @@ const desactivate = () => {
   mapFilters.classList.add(`map__filters--disabled`);
   addressInput.value = `${pinMaininActiveCoordinateX}, ${pinMaininActiveCoordinateY}`;
   document.querySelector(`.pins`).remove();
-  // document.querySelector(`.popup`).remove(); записать через if
-  if (document.querySelector(`.popup`)) {
-    document.querySelector(`.popup`).remove();
+  const popup = document.querySelector(`.popup`);
+  if (popup) {
+    popup.remove();
   }
 };
 
@@ -162,18 +161,24 @@ const renderSuccessPost = () => {
 // Б2: вроде ошибка была из-за этого + Д14 дублирование кода
 const removeSubmitSuccessLayer = () => {
   document.querySelector(`.succeded-form`).remove();
-  document.removeEventListener(`click`, removeSubmitSuccessLayer);
-  document.removeEventListener(`keydown`, removeSubmitSuccessLayer);
+  document.removeEventListener(`click`, onSubmitSuccesLayerClick);
+  document.removeEventListener(`keydown`, onSubmitSuccesLayerkeydown);
+};
+
+const onSubmitSuccesLayerClick = () => {
+  removeSubmitSuccessLayer();
+};
+
+const onSubmitSuccesLayerkeydown = (evt) => {
+  if (evt.keyCode === ESCAPE_BUTTON) {
+    removeSubmitSuccessLayer();
+  }
 };
 
 const onSuccessSubmit = () => {
   renderSuccessPost();
-  document.addEventListener(`click`, removeSubmitSuccessLayer);
-  document.addEventListener(`keydown`, (evt) => {
-    if (evt.keyCode === ESCAPE_BUTTON) {
-      removeSubmitSuccessLayer();
-    }
-  });
+  document.addEventListener(`click`, onSubmitSuccesLayerClick);
+  document.addEventListener(`keydown`, onSubmitSuccesLayerkeydown);
   form.reset();
   desactivate();
   disableFieldSets();
@@ -189,22 +194,26 @@ const renderErrorPost = () => {
 
 const removeSubmitErrorLayer = () => {
   document.querySelector(`.error-form`).remove();
-  document.removeEventListener(`click`, removeSubmitSuccessLayer);
-  document.removeEventListener(`keydown`, removeSubmitSuccessLayer);
-  errorButtonMessage.removeEventListener(`keydown`, removeSubmitSuccessLayer);
-};
-// Д14 дублирование кода
-const onErrorSubmit = () => {
-  renderErrorPost();
-  document.addEventListener(`click`, removeSubmitErrorLayer);
-  document.addEventListener(`keydown`, (evt) => {
-    if (evt.keyCode === ESCAPE_BUTTON) {
-      removeSubmitErrorLayer();
-    }
-  });
-  errorButtonMessage.addEventListener(`click`, removeSubmitErrorLayer);
+  document.removeEventListener(`click`, onSubmitErrorLayerClick);
+  document.removeEventListener(`keydown`, onSubmitErrorLayerkeydown);
 };
 
+const onSubmitErrorLayerClick = () => {
+  removeSubmitErrorLayer();
+};
+
+const onSubmitErrorLayerkeydown = (evt) => {
+  if (evt.keyCode === ESCAPE_BUTTON) {
+    removeSubmitErrorLayer();
+  }
+};
+
+const onErrorSubmit = () => {
+  renderErrorPost();
+  document.addEventListener(`click`, onSubmitErrorLayerClick);
+  document.addEventListener(`keydown`, onSubmitErrorLayerkeydown);
+};
+// Д20 не получается сделать, что-то делаю не так
 const limitY = (topPosition) => {
   if (topPosition < MIN_Y) {
     return MIN_Y;
@@ -225,29 +234,30 @@ const limitX = (leftPosition, parentElement) => {
   return leftPosition;
 };
 
-const onMouseMove = (moveEvt, someStartCoords) => {
-  moveEvt.preventDefault();
+const onMouseMove = (evt) => {
+  evt.preventDefault();
 
-  let shift = {
-    x: someStartCoords.x - moveEvt.clientX,
-    y: someStartCoords.y - moveEvt.clientY
-  };
+  // TODO сделай из этого просто 2 const переменные
+  const shiftX = startCoords.x - evt.clientX;
+  const shiftY = startCoords.y - evt.clientY;
+  // const shift = {
+  //   x: startCoords.x - evt.clientX,
+  //   y: startCoords.y - evt.clientY
+  // };
 
-  someStartCoords = {
-    x: moveEvt.clientX,
-    y: moveEvt.clientY
-  };
+  startCoords.x = evt.clientX;
+  startCoords.y = evt.clientY;
 
-  const top = limitY(pinMain.offsetTop - shift.y);
-  const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
+  const top = limitY(pinMain.offsetTop - shiftY);
+  const left = limitX((pinMain.offsetLeft - shiftX), pinMainParent);
   pinMain.style.top = `${top}px`;
   pinMain.style.left = `${left}px`;
   addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
 };
 
-const onMouseUp = (upEvt, someStartCoords) => {
+const onMouseUp = (upEvt) => {
   upEvt.preventDefault();
-  onMouseMove(upEvt, someStartCoords);
+  onMouseMove(upEvt);
   document.removeEventListener(`mousemove`, onMouseMove);
   document.removeEventListener(`mouseup`, onMouseUp);
 
@@ -256,57 +266,69 @@ const onMouseUp = (upEvt, someStartCoords) => {
 pinMain.addEventListener(`mousedown`, (evt) => {
   evt.preventDefault();
   if (evt.button === MOUSE_LEFT_BUTTON) {
-    // Б1: вызываю просто onPinMainMousedown() вместо if (pinsData.length === 0) { onPinMainMousedown()}
     onPinMainMousedown();
-    // let startCoords = {
-    //   x: evt.clientX,
-    //   y: evt.clientY
-    // };
+    startCoords.x = evt.clientX;
+    startCoords.y = evt.clientY;
 
-    // const onMouseMove = (moveEvt) => {
-    //   moveEvt.preventDefault();
-
-    //   let shift = {
-    //     x: startCoords.x - moveEvt.clientX,
-    //     y: startCoords.y - moveEvt.clientY
-    //   };
-
-    //   startCoords = {
-    //     x: moveEvt.clientX,
-    //     y: moveEvt.clientY
-    //   };
-
-    //   const top = limitY(pinMain.offsetTop - shift.y);
-    //   const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
-    //   pinMain.style.top = `${top}px`;
-    //   pinMain.style.left = `${left}px`;
-    //   addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
-    // };
-
-    // const onMouseUp = (upEvt) => {
-    //   upEvt.preventDefault();
-    //   onMouseMove(upEvt);
-    //   document.removeEventListener(`mousemove`, onMouseMove);
-    //   document.removeEventListener(`mouseup`, onMouseUp);
-
-    // };
-
-    document.addEventListener(`mousemove`, (moveEvt) => {
-      onMouseMove(moveEvt, startCoords);
-    });
-    document.addEventListener(`mouseup`, (upEvt) => {
-      onMouseUp(upEvt, startCoords);
-    });
+    document.addEventListener(`mousemove`, onMouseMove);
+    document.addEventListener(`mouseup`, onMouseUp);
   }
 });
 
+// pinMain.addEventListener(`mousedown`, (evt) => {
+//   evt.preventDefault();
+//   if (evt.button === MOUSE_LEFT_BUTTON) {
+//     // Б1: вызываю просто onPinMainMousedown() вместо if (pinsData.length === 0) { onPinMainMousedown()}
+//     onPinMainMousedown();
+//     // let startCoords = {
+//     //   x: evt.clientX,
+//     //   y: evt.clientY
+//     // };
+
+//     // const onMouseMove = (moveEvt) => {
+//     //   moveEvt.preventDefault();
+
+//     //   let shift = {
+//     //     x: startCoords.x - moveEvt.clientX,
+//     //     y: startCoords.y - moveEvt.clientY
+//     //   };
+
+//     //   startCoords = {
+//     //     x: moveEvt.clientX,
+//     //     y: moveEvt.clientY
+//     //   };
+
+//     //   const top = limitY(pinMain.offsetTop - shift.y);
+//     //   const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
+//     //   pinMain.style.top = `${top}px`;
+//     //   pinMain.style.left = `${left}px`;
+//     //   addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
+//     // };
+
+//     // const onMouseUp = (upEvt) => {
+//     //   upEvt.preventDefault();
+//     //   onMouseMove(upEvt);
+//     //   document.removeEventListener(`mousemove`, onMouseMove);
+//     //   document.removeEventListener(`mouseup`, onMouseUp);
+
+//     // };
+
+//     document.addEventListener(`mousemove`, (moveEvt) => {
+//       onMouseMove(moveEvt, startCoords);
+//     });
+//     document.addEventListener(`mouseup`, (upEvt) => {
+//       onMouseUp(upEvt, startCoords);
+//     });
+//   }
+// });
+// здесь нужен removeListener?
 pinMain.addEventListener(`keydown`, (evt) => {
   if (evt.keyCode === KEY_ENTER) {
     onPinMainMousedown();
   }
 });
 
-titleInput.addEventListener(`input`, () => {
+const onTitleInputInput = () => {
   const valueLength = titleInput.value.length;
   if (valueLength < MIN_TITLE_LENGTH) {
     titleInput.setCustomValidity(`Еще ${MIN_TITLE_LENGTH - valueLength} символов`);
@@ -317,30 +339,34 @@ titleInput.addEventListener(`input`, () => {
     titleInput.setCustomValidity(``);
   }
   titleInput.reportValidity();
+};
+
+titleInput.addEventListener(`input`, () => {
+  onTitleInputInput();
 });
-// добавлен removeaddeventlistener
+
 roomNumberInput.addEventListener(`change`, () => {
   onRoomNumberChange();
 });
-// добавлен removeaddeventlistener
+
 capacityInput.addEventListener(`change`, () => {
   onRoomNumberChange();
 });
-// добавлен removeaddeventlistener
+
 typeField.addEventListener(`change`, () => {
   onTypeFieldChange();
 });
-// добавлен removeaddeventlistener
+
 priceInput.addEventListener(`input`, () => {
   onPriceInputChange();
 });
 
-// добавлен removeaddeventlistener
+
 timeIn.addEventListener(`change`, () => {
   onTimeInChange();
 });
 
-// добавлен removeaddeventlistener
+
 timeOut.addEventListener(`change`, () => {
   onTimeOutChange();
 });
@@ -364,7 +390,7 @@ form.addEventListener(`submit`, (evt) => {
 });
 
 disableFieldSets();
-// Б1
+
 changeAddressInput();
 
 window.form = {

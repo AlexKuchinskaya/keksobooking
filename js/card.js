@@ -12,14 +12,28 @@ const appartmentTypeTranslation = {
   palace: `Дворец`
 };
 
-//  Правильно ли записано и передано удаление события? Особенно где keydown
-const onPopupElementClick = (someElement) => {
-  someElement.remove();
-  someElement.removeEventListener(`click`, onPopupElementClick);
-  document.removeEventListener(`keydown`, onPopupElementClick);
+const createFeatures = (element, data) => {
+  const featureElements = element.querySelectorAll(`.popup__feature`);
+  featureElements.forEach((featureElement) => {
+    const checkFeatures = (feature) => {
+      return featureElement.classList.contains(`popup__feature--${feature}`);
+    };
+    const featureIsIncluded = data.offer.features.some(checkFeatures);
+    if (!featureIsIncluded) {
+      featureElement.classList.add(`visually-hidden`);
+    }
+  });
 };
-// Д25 Как разбить на несколько, если здесь изаписывается данные в шаблон и добавляются обработчики, просто много данных надо записать
-// не знаю, что отсюда вынести
+
+const createPhotoPopup = (item, photoInstance) => {
+  const photoElement = photoInstance.cloneNode(true);
+  photoElement.src = item;
+  photoElement.style.width = photoHeight;
+  photoElement.style.height = photoWidth;
+  photoElement.alt = `Фотография жилья`;
+  return photoElement;
+};
+
 const renderPopup = (information) => {
   const popupElement = cardTemplate.cloneNode(true);
   popupElement.querySelector(`.popup__title`).textContent = information.offer.title;
@@ -30,44 +44,31 @@ const renderPopup = (information) => {
   popupElement.querySelector(`.popup__text--time`).textContent = `Заезд после ${information.offer.checkin}, выезд до ${information.offer.checkout}`;
 
   popupElement.querySelector(`.popup__close`).addEventListener(`click`, () => {
-    onPopupElementClick(popupElement);
-  });
-  document.addEventListener(`keydown`, (evt) => {
-    if (evt.keyCode === ESCAPE_BUTTON) {
-      onPopupElementClick(popupElement);
-    }
+    popupElement.remove();
   });
 
-  const featureElements = popupElement.querySelectorAll(`.popup__feature`);
-  for (let i = 0; i < featureElements.length; i++) {
-    const featureElement = featureElements[i];
-    const checkFeatures = (feature) => {
-      return featureElement.classList.contains(`popup__feature--${feature}`);
-    };
-    const featureIsIncluded = information.offer.features.some(checkFeatures);
-    if (!featureIsIncluded) {
-      featureElement.classList.add(`visually-hidden`);
+  const onKeydown = (evt) => {
+    if (evt.keyCode === ESCAPE_BUTTON) {
+      popupElement.remove();
+      document.removeEventListener(`keydown`, onKeydown);
     }
-  }
+  };
+
+  document.addEventListener(`keydown`, onKeydown);
+
+  createFeatures(popupElement, information);
 
   popupElement.querySelector(`.popup__description`).textContent = information.offer.description;
   popupElement.querySelector(`.popup__avatar`).src = information.author.avatar;
 
-  const popupPhotoContainer = popupElement.querySelector(`.popup__photos`);
   const photoPopup = popupElement.querySelector(`.popup__photo`);
-  const fragmentPhoto = document.createDocumentFragment();
-
-  information.offer.photos.forEach((element) => {
-    const photoElement = photoPopup.cloneNode(true);
-    photoElement.src = element;
-    photoElement.style.width = photoHeight;
-    photoElement.style.height = photoWidth;
-    photoElement.alt = `Фотография жилья`;
-    fragmentPhoto.appendChild(photoElement);
-  });
+  const popupPhotoContainer = popupElement.querySelector(`.popup__photos`);
 
   popupPhotoContainer.innerHTML = ``;
-  popupPhotoContainer.appendChild(fragmentPhoto);
+  information.offer.photos.forEach((element) => {
+    const result = createPhotoPopup(element, photoPopup);
+    popupPhotoContainer.appendChild(result);
+  });
 
   return popupElement;
 };

@@ -22,33 +22,13 @@ const housingPriceFilter = mapFilters.querySelector(`#housing-price`);
 const housingRoomsFilter = mapFilters.querySelector(`#housing-rooms`);
 const housingGuestsFilter = mapFilters.querySelector(`#housing-guests`);
 const housingFeaturesFilter = mapFilters.querySelector(`#housing-features`);
-const elementsFilterForm = mapFilters.children;
-// Б24 не знаю, как избавиься от этой функции, но чтобы все работало
-const getCheckedCheckboxes = () => {
-  const checkboxes = housingFeaturesFilter.querySelectorAll(`input`);
-  let checkboxesChecked = [];
-  for (let i = 0; i < checkboxes.length; i++) {
-    if (checkboxes[i].checked) {
-      checkboxesChecked.push(checkboxes[i].value);
-    }
-  }
-  return checkboxesChecked;
-};
-
-// const filterPinsByHousingFeatures = (pin) => {
-//   const checkboxes = housingFeaturesFilter.querySelectorAll(`input`);
-//   const featuresArray = Array.from(checkboxes);
-//   return featuresArray.every((feature) => {
-//     if (feature.checked) {
-//       return pin.offer.features === feature.value;
-//     }
-//   }) ? pin : null;
-// };
+const elementsFilterForm = mapFilters.querySelectorAll(`.map__filter, .map__features`);
 
 const filterPinsByHousingFeatures = (pin) => {
-  const featuresArray = getCheckedCheckboxes();
+  const сheckedCheckboxes = housingFeaturesFilter.querySelectorAll(`input:checked`);
+  const featuresArray = Array.from(сheckedCheckboxes);
   return featuresArray.every((feature) => {
-    return pin.offer.features.includes(feature);
+    return pin.offer.features.includes(feature.value);
   }) ? pin : null;
 };
 
@@ -116,17 +96,20 @@ const filterPinsByHousingGuests = (pin) => {
 
 const debouncedRenderPings = window.debounce(window.pin.renderPins);
 
-for (let i = 0; i < elementsFilterForm.length; i++) {
-  let filterElement = elementsFilterForm[i];
-  filterElement.addEventListener(`change`, () => {
+
+elementsFilterForm.forEach((element) => {
+  element.addEventListener(`change`, () => {
     const allPins = window.form.getPinsData();
     const filters = [filterPinsByHousingType, filterPinsByHousingPrice, filterPinsByHousingRooms, filterPinsByHousingGuests, filterPinsByHousingFeatures];
     const filteredPins = [];
     for (let pinIndex = 0; pinIndex < allPins.length && filteredPins.length < MAX_PINS; pinIndex++) {
       let pin = allPins[pinIndex];
-      for (let filterIndex = 0; filterIndex < filters.length && pin; filterIndex++) {
-        pin = filters[filterIndex](pin);
-      }
+      filters.forEach((filterFunction) => {
+        pin = filterFunction(pin);
+      });
+      // for (let filterIndex = 0; filterIndex < filters.length && pin; filterIndex++) {
+      //   pin = filters[filterIndex](pin);
+      // }
       if (pin) {
         filteredPins.push(pin);
       }
@@ -134,4 +117,4 @@ for (let i = 0; i < elementsFilterForm.length; i++) {
     debouncedRenderPings(filteredPins);
     window.card.closeAllPopups();
   });
-}
+});

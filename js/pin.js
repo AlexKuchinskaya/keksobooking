@@ -36,14 +36,11 @@ const getPinDomIdandActive = (evt) => {
   window.card.renderPopupFragment(pinData);
 };
 
-// правильно ли будет так записать удаление события?
-const onPinDomClickAndKeydown = (evt, someElement) => {
+const onPinDomClickOrKeydown = (evt) => {
   window.card.closeAllPopups();
   getPinDomIdandActive(evt);
-  someElement.removeEventListener(`click`, onPinDomClickAndKeydown);
-  someElement.removeEventListener(`keydown`, onPinDomClickAndKeydown);
-
 };
+
 const renderPins = (pinsData) => {
   const fragment = document.createElement(`div`);
   fragment.classList.add(`pins`);
@@ -51,11 +48,11 @@ const renderPins = (pinsData) => {
   for (let i = 0; i < iterations; i++) {
     let pinDom = renderPin(pinsData[i]);
     pinDom.addEventListener(`click`, (evt) => {
-      onPinDomClickAndKeydown(evt, pinDom);
-    }); // как передать параметром событие
+      onPinDomClickOrKeydown(evt);
+    });
     pinDom.addEventListener(`keydown`, (evt) => {
       if (evt.keyCode === KEY_ENTER) {
-        onPinDomClickAndKeydown(evt, pinDom);
+        onPinDomClickOrKeydown(evt);
       }
     });
     fragment.appendChild(pinDom);
