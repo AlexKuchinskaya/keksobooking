@@ -104,12 +104,9 @@ elementsFilterForm.forEach((element) => {
     const filteredPins = [];
     for (let pinIndex = 0; pinIndex < allPins.length && filteredPins.length < MAX_PINS; pinIndex++) {
       let pin = allPins[pinIndex];
-      filters.forEach((filterFunction) => {
-        pin = filterFunction(pin);
-      });
-      // for (let filterIndex = 0; filterIndex < filters.length && pin; filterIndex++) {
-      //   pin = filters[filterIndex](pin);
-      // }
+      for (let filterIndex = 0; filterIndex < filters.length && pin; filterIndex++) {
+        pin = filters[filterIndex](pin);
+      }
       if (pin) {
         filteredPins.push(pin);
       }

@@ -66,8 +66,8 @@ const renderPopup = (information) => {
 
   popupPhotoContainer.innerHTML = ``;
   information.offer.photos.forEach((element) => {
-    const result = createPhotoPopup(element, photoPopup);
-    popupPhotoContainer.appendChild(result);
+    const newPhotoElement = createPhotoPopup(element, photoPopup);
+    popupPhotoContainer.appendChild(newPhotoElement);
   });
 
   return popupElement;

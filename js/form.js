@@ -38,7 +38,6 @@ const errorTask = document.querySelector(`#error`).content;
 const errorTemplate = errorTask.querySelector(`.error`);
 const mainBlock = document.querySelector(`main`);
 const fieldsetsForm = form.querySelectorAll(`fieldset`);
-const errorButtonMessage = document.querySelector(`.error__button`);
 
 const houseTypes = {
   'palace': {
@@ -158,7 +157,6 @@ const renderSuccessPost = () => {
   mainBlock.insertAdjacentElement(`afterbegin`, fragmentSuccess);
 };
 
-// Б2: вроде ошибка была из-за этого + Д14 дублирование кода
 const removeSubmitSuccessLayer = () => {
   document.querySelector(`.succeded-form`).remove();
   document.removeEventListener(`click`, onSubmitSuccesLayerClick);
@@ -213,7 +211,7 @@ const onErrorSubmit = () => {
   document.addEventListener(`click`, onSubmitErrorLayerClick);
   document.addEventListener(`keydown`, onSubmitErrorLayerkeydown);
 };
-// Д20 не получается сделать, что-то делаю не так
+
 const limitY = (topPosition) => {
   if (topPosition < MIN_Y) {
     return MIN_Y;
@@ -237,14 +235,8 @@ const limitX = (leftPosition, parentElement) => {
 const onMouseMove = (evt) => {
   evt.preventDefault();
 
-  // TODO сделай из этого просто 2 const переменные
   const shiftX = startCoords.x - evt.clientX;
   const shiftY = startCoords.y - evt.clientY;
-  // const shift = {
-  //   x: startCoords.x - evt.clientX,
-  //   y: startCoords.y - evt.clientY
-  // };
-
   startCoords.x = evt.clientX;
   startCoords.y = evt.clientY;
 
@@ -269,59 +261,11 @@ pinMain.addEventListener(`mousedown`, (evt) => {
     onPinMainMousedown();
     startCoords.x = evt.clientX;
     startCoords.y = evt.clientY;
-
     document.addEventListener(`mousemove`, onMouseMove);
     document.addEventListener(`mouseup`, onMouseUp);
   }
 });
 
-// pinMain.addEventListener(`mousedown`, (evt) => {
-//   evt.preventDefault();
-//   if (evt.button === MOUSE_LEFT_BUTTON) {
-//     // Б1: вызываю просто onPinMainMousedown() вместо if (pinsData.length === 0) { onPinMainMousedown()}
-//     onPinMainMousedown();
-//     // let startCoords = {
-//     //   x: evt.clientX,
-//     //   y: evt.clientY
-//     // };
-
-//     // const onMouseMove = (moveEvt) => {
-//     //   moveEvt.preventDefault();
-
-//     //   let shift = {
-//     //     x: startCoords.x - moveEvt.clientX,
-//     //     y: startCoords.y - moveEvt.clientY
-//     //   };
-
-//     //   startCoords = {
-//     //     x: moveEvt.clientX,
-//     //     y: moveEvt.clientY
-//     //   };
-
-//     //   const top = limitY(pinMain.offsetTop - shift.y);
-//     //   const left = limitX((pinMain.offsetLeft - shift.x), pinMainParent);
-//     //   pinMain.style.top = `${top}px`;
-//     //   pinMain.style.left = `${left}px`;
-//     //   addressInput.value = `${top + pinActiveWidth}, ${left + pinActiveHeight}`;
-//     // };
-
-//     // const onMouseUp = (upEvt) => {
-//     //   upEvt.preventDefault();
-//     //   onMouseMove(upEvt);
-//     //   document.removeEventListener(`mousemove`, onMouseMove);
-//     //   document.removeEventListener(`mouseup`, onMouseUp);
-
-//     // };
-
-//     document.addEventListener(`mousemove`, (moveEvt) => {
-//       onMouseMove(moveEvt, startCoords);
-//     });
-//     document.addEventListener(`mouseup`, (upEvt) => {
-//       onMouseUp(upEvt, startCoords);
-//     });
-//   }
-// });
-// здесь нужен removeListener?
 pinMain.addEventListener(`keydown`, (evt) => {
   if (evt.keyCode === KEY_ENTER) {
     onPinMainMousedown();
@@ -370,13 +314,13 @@ timeIn.addEventListener(`change`, () => {
 timeOut.addEventListener(`change`, () => {
   onTimeOutChange();
 });
-// здесь мне вынести эти  функции в одну и для нее записать removeListener?
+
 resetButton.addEventListener(`click`, (evt) => {
   evt.preventDefault();
   form.reset();
   desactivate();
 });
-// здесь мне вынести эти  функции в одну и для нее записать removeListener?
+
 form.addEventListener(`submit`, (evt) => {
   evt.preventDefault();
   onRoomNumberChange();
